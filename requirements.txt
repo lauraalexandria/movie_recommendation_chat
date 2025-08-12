@@ -1,0 +1,17 @@
+pre-commit
+pandas
+numpy
+# json
+requests
+typing
+fastembed
+torch
+transformers
+jupyter
+openai
+dotenv
+# google
+fastmcp
+langgraph
+langchain_mcp_adapters
+langchain_openai

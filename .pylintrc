@@ -1,0 +1,13 @@
+[MASTER]
+init-hook='import sys; sys.path.append("/opt/conda/envs/chat-env")'
+ignore-patterns = ^_.*
+disable =
+    missing-docstring,
+    too-few-public-methods,
+    import-error,
+    wrong-import-position,
+    no-value-for-parameter
+[MESSAGES CONTROL]
+disable =
+    C0114,  # missing-module-docstring
+    C0116   # missing-function-docstring
