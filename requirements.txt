@@ -4,6 +4,7 @@ numpy
 # json
 requests
 typing
+qdrant_client
 fastembed
 torch
 transformers
@@ -15,3 +16,4 @@ fastmcp
 langgraph
 langchain_mcp_adapters
 langchain_openai
+kaggle

@@ -10,6 +10,7 @@ The project includes:
 * Conda - Virtual enviroment
 * Pylint - Static code analyser
 * pre-commit - pre-commit hooks
+* Qdrant - embedding?
 
 ## Projet Struture
 
@@ -20,6 +21,7 @@ The project includes:
 * Makefile
 * Conda
 * Docker
+* Qdrant
 
 ### Setup project with Makefile
 
@@ -46,6 +48,7 @@ cp .env.example .env
 ```
 
 And change the default values to your needs:
+1. The Kaggle credentials can be view in "Settings" > Down until "API" > "Create New API Token" and the file kaggle.json will be downloaded with the credentials;
 1. The OpenAI credentials can be view in https://platform.openai.com/, after create an account, search for "API Keys";
 
 ### Build Dockers
@@ -121,3 +124,8 @@ conda deactivate
 ```
 
 ## To-do list (next improvements)
+
+* rodar o modelo menor...
+* Separar a etapa de criação do qdrant + passar o comando para o Makefile;
+* [ ] Bring more movies from Wiki
+* [ ] Add ratings.csv to repo
