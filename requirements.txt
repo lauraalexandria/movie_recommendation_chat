@@ -17,3 +17,5 @@ langgraph
 langchain_mcp_adapters
 langchain_openai
 kaggle
+#logging
+click

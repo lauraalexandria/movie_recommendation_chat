@@ -2,8 +2,14 @@
 VENV_NAME = chat-env
 PYTHON = python
 DATA_DIR = data
-RAW_DATA = $(DATA_DIR)/raw/dataset.csv
+RAW_DATA = $(DATA_DIR)/raw#/dataset.csv
 PROCESSED_DATA = $(DATA_DIR)/processed/model_data.csv
+
+COLLECTION_NAME = chosen_movies2
+EMBEDDING_DIMENSIONALITY = 384
+MODEL_NAME = BAAI/bge-small-en
+TOP_K = 5
+QUERY = "Science movie"
 
 # === COMANDS ===
 ## Create virtual environment
@@ -18,23 +24,31 @@ install:
 
 ## Extract Data
 extract-data:
-	$(PYTHON) scr/model_pipeline/data_extractor.py
+	$(PYTHON) scr/data_extractor.py
+
+## Create Qdrant Collection
+create-qdrant-collection:
+	$(PYTHON) scr/create_qdrant_collection.py --collection-name $(COLLECTION_NAME) --embedding-dimensionality $(EMBEDDING_DIMENSIONALITY) --model-name $(MODEL_NAME) --path-source $(RAW_DATA)
+
+## Qdrant Search
+qdrant-search:
+	$(PYTHON) scr/qdrant_search.py --model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K) --query $(QUERY)
 
 ## Data Preparation
 prepare-data: # $(RAW_DATA)
-	$(PYTHON) scr/model_pipeline/data_preparation.py
+	$(PYTHON) scr/data_preparation.py
 
 ## Feature Engineering
 feat-eng: # $(RAW_DATA)
-	$(PYTHON) scr/model_pipeline/feature_engineering.py
+	$(PYTHON) scr/feature_engineering.py
 
 ## Create target ans split data
 target-split: # $(RAW_DATA)
-	$(PYTHON) scr/model_pipeline/temporal_target_and_split.py --input-path $(PROCESSED_DATA) --target-col-source $(TARGET_COL_SOURCE) --horizon $(HORIZON) --split-data $(SPLIT_DATE)
+	$(PYTHON) scr/temporal_target_and_split.py --input-path $(PROCESSED_DATA) --target-col-source $(TARGET_COL_SOURCE) --horizon $(HORIZON) --split-data $(SPLIT_DATE)
 
 ## Model tuning
 tune: # $(PROCESSED_DATA)
-	$(PYTHON) scr/model_pipeline/catboost_optimization.py --split-data $(SPLIT_DATE)
+	$(PYTHON) scr/catboost_optimization.py --split-data $(SPLIT_DATE)
 
 ## Final model
 #eda:
@@ -43,7 +57,7 @@ tune: # $(PROCESSED_DATA)
 
 ## Final model
 final-model:
-	$(PYTHON) scr/model_pipeline/select_and_register_model.py
+	$(PYTHON) scr/select_and_register_model.py
 
 ## Monitor
 monitor:

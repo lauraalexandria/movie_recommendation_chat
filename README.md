@@ -53,6 +53,13 @@ And change the default values to your needs:
 
 ### Build Dockers
 
+
+
+Ou seja, tenho que adicionar no docker
+```
+docker run -p 6333:6333 qdrant/qdrant
+```
+
 ```
 docker-compose down -v; docker-compose build; docker-compose up -d
 ```
@@ -62,6 +69,7 @@ docker-compose down -v; docker-compose build; docker-compose up -d
 | Service         | URL                        | Credentials                                          |
 |-----------------|----------------------------|------------------------------------------------------|
 | MLflow UI       | http://localhost:5000      | -                                                    |
+| Qdrant          | http://localhost:6333      | -                                                    |
 | Adminer         | http://localhost:8080      |PostgreSQL/db/postgre/${POSTGRES_PASSWORD}/${DB_NAME} |
 | Grafana         | http://localhost:3000      | admin/admin                                          |
 | FastAPI         | http://localhost:8000/docs | -                                                    |
@@ -125,7 +133,5 @@ conda deactivate
 
 ## To-do list (next improvements)
 
-* rodar o modelo menor...
-* Separar a etapa de criação do qdrant + passar o comando para o Makefile;
 * [ ] Bring more movies from Wiki
 * [ ] Add ratings.csv to repo
