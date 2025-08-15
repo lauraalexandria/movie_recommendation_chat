@@ -8,8 +8,8 @@ PROCESSED_DATA = $(DATA_DIR)/processed/model_data.csv
 COLLECTION_NAME = chosen_movies2
 EMBEDDING_DIMENSIONALITY = 384
 MODEL_NAME = BAAI/bge-small-en
-TOP_K = 5
-QUERY = "Science movie"
+TOP_K = 10
+QUERY = "a non-american romantic movie"
 
 # === COMANDS ===
 ## Create virtual environment

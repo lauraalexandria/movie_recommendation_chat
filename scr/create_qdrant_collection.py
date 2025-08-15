@@ -11,7 +11,7 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
-client = QdrantClient("http://localhost:6333")
+client_qdrant = QdrantClient("http://localhost:6333")
 
 
 @click.command()
@@ -36,11 +36,14 @@ client = QdrantClient("http://localhost:6333")
     help="Path for datasets",
 )
 def create_collection(
-    collection_name, embedding_dimensionality, model_name, path_source
+    collection_name: str,
+    embedding_dimensionality: int,
+    model_name: str,
+    path_source: str,
 ):
 
     logging.info("Creating collection")
-    client.create_collection(
+    client_qdrant.create_collection(
         collection_name=collection_name,
         vectors_config=models.VectorParams(
             size=embedding_dimensionality, distance=models.Distance.COSINE
@@ -64,7 +67,7 @@ def create_collection(
             f"{row['Title']} {row['Genre']} {row['Director']} {row['Plot']}"
         )
         embedding = list(embedding_model.embed([text]))[0].tolist()
-        client.upsert(
+        client_qdrant.upsert(
             collection_name=collection_name,
             points=[
                 {

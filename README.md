@@ -22,6 +22,7 @@ The project includes:
 * Conda
 * Docker
 * Qdrant
+* OpenAI API
 
 ### Setup project with Makefile
 
