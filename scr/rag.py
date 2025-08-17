@@ -13,9 +13,6 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client_qdrant = QdrantClient("http://localhost:6333")
 client_openai = OpenAI()
 
-COLLECTION_NAME = "chosen_movies"
-EMBEDDING_DIMENSIONALITY = 384
-
 
 @click.command()
 @click.option(
@@ -46,17 +43,17 @@ def recommend_movies(
 
     logging.info("Entering query and search for answer")
     query_embedding = list(embedding_model.embed([query]))[0].tolist()
-    results = client_qdrant.query_points(
+    vector_results = client_qdrant.query_points(
         collection_name=collection_name,
         query=query_embedding,
         with_payload=True,
         limit=top_k,
     )
 
-    recommendations = [hit.payload for hit in results.points]
+    vector_recommendations = [hit.payload for hit in vector_results.points]
 
     context = ""
-    for movie in recommendations:
+    for movie in vector_recommendations:
         context += (
             f"{movie["title"]}\n {movie["director"]}\n {movie["plot"]}\n\n"
         )
@@ -80,6 +77,32 @@ def recommend_movies(
 
     answer = response.choices[0].message.content.strip()
     print(answer)
+
+    # limit = 1
+    # hybrid_results = client_qdrant.query_points(
+    #     collection_name=collection_name,
+    #     prefetch=[
+    #         models.Prefetch(
+    #             query=models.Document(
+    #                 text=query,
+    #                 model=model_name, #"jinaai/jina-embeddings-v2-small-en",
+    #             ),
+    #             using="BAAI-small", #"jina-small",
+    #             limit=(5 * limit),
+    #         ),
+    #         models.Prefetch(
+    #             query=models.Document(
+    #                 text=query,
+    #                 model="Qdrant/bm25",
+    #             ),
+    #             using="bm25",
+    #             limit=(5 * limit),
+    #         ),
+    #     ],
+    #     # Fusion query enables fusion on the prefetched results
+    #     query=models.FusionQuery(fusion=models.Fusion.RRF),
+    #     with_payload=True,
+    # )
 
     return answer
 

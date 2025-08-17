@@ -2,14 +2,15 @@
 VENV_NAME = chat-env
 PYTHON = python
 DATA_DIR = data
-RAW_DATA = $(DATA_DIR)/raw#/dataset.csv
+RAW_DATA = $(DATA_DIR)/raw#/dataset.csv # será que é tão necessário assim?
 PROCESSED_DATA = $(DATA_DIR)/processed/model_data.csv
 
-COLLECTION_NAME = chosen_movies2
+COLLECTION_NAME = movies
 EMBEDDING_DIMENSIONALITY = 384
 MODEL_NAME = BAAI/bge-small-en
 TOP_K = 10
 QUERY = "a non-american romantic movie"
+N_TESTS = 3
 
 # === COMANDS ===
 ## Create virtual environment
@@ -32,11 +33,11 @@ create-qdrant-collection:
 
 ## Qdrant Search
 qdrant-search:
-	$(PYTHON) scr/qdrant_search.py --model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K) --query $(QUERY)
+	$(PYTHON) scr/rag.py --model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K) --query $(QUERY)
 
 ## Data Preparation
-prepare-data: # $(RAW_DATA)
-	$(PYTHON) scr/data_preparation.py
+generate-evaluation-data: # $(RAW_DATA)
+	$(PYTHON) scr/generate_evaluation_data.py --path-source $(DATA_DIR) --n-tests $(N_TESTS)
 
 ## Feature Engineering
 feat-eng: # $(RAW_DATA)

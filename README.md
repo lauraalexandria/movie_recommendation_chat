@@ -134,5 +134,8 @@ conda deactivate
 
 ## To-do list (next improvements)
 
-* [ ] Bring more movies from Wiki
-* [ ] Add ratings.csv to repo
+* no Retrieval evaluation eu deveria comparar diferentes modelos?
+* Como gerar os dados de base de comparação???
+* se eu passar uma solicitação do tipo quero um filme igual a esse, acho que não vai dar certo...
+* [ ] Bring more movies from Wiki - e os plots da wikipedia são bem grandes, né?
+* [ ] Add ratings.csv and generate data to repo
