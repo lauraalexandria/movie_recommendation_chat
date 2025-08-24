@@ -9,8 +9,9 @@ COLLECTION_NAME = movies
 EMBEDDING_DIMENSIONALITY = 384
 MODEL_NAME = BAAI/bge-small-en
 TOP_K = 10
-QUERY = "a non-american romantic movie"
+QUERY = "a non-american romantic movie" # "why is submarine a good movie?"
 N_TESTS = 3
+GPT_MODEL_NAME = "gpt-4o-mini"
 
 # === COMANDS ===
 ## Create virtual environment
@@ -37,7 +38,7 @@ qdrant-search:
 
 ## Data Preparation
 generate-evaluation-data: # $(RAW_DATA)
-	$(PYTHON) scr/generate_evaluation_data.py --path-source $(DATA_DIR) --n-tests $(N_TESTS)
+	$(PYTHON) scr/generate_evaluation_data.py --path-source $(DATA_DIR) --n-tests $(N_TESTS) --gpt-model-name $(GPT_MODEL_NAME)
 
 ## Feature Engineering
 feat-eng: # $(RAW_DATA)

@@ -25,9 +25,13 @@ client_openai = OpenAI()
     default=3,
     help="Number of texts to generate",
 )
+@click.option(
+    "--gpt-model-name",
+    default="gpt-4o-mini",
+    help="ChatGPT model name",
+)
 def generate_evaluation_data(
-    path_source: str,
-    n_tests: int,
+    path_source: str, n_tests: int, gpt_model_name: str
 ):
 
     logging.info("Reading datasets")
@@ -37,12 +41,15 @@ def generate_evaluation_data(
     boxd = boxd.drop(["Date", "Letterboxd URI", "Rating"], axis=1)
     boxd = boxd.rename({"Name": "Title", "Year": "Release Year"}, axis=1)
 
-    df = wiki.merge(boxd, on=["Title", "Release Year"])
+    documents = wiki.merge(boxd, on=["Title", "Release Year"])
 
     # ACHAVA QUE PRECISAVA, MAS NÃO!
     # The record should contain the answer to the solicitations.
     # Create the awswers based in the context below.
 
+    json_format = (
+        '{{"solicitations": ["solicitation", "...", "solicitation"]}}'
+    )
     prompt_template = f"""
     You emulate a user that wants to find new movies.
     Formulate {n_tests} short solicitations this user might ask that the answer
@@ -59,17 +66,18 @@ def generate_evaluation_data(
     Plot: {{Plot}}
 
     Retorn in JSON format:
-    {{"solicitations": [{{"solicitation", "...", "solicitation"}}]}}
+    {json_format}
     """
 
-    documents = df.to_dict(orient="records")
+    documents = documents.to_dict(orient="records")
     results = {}
     for doc in tqdm(documents):
 
         doc_id = f"{doc["Title"]} - {doc["Release Year"]}"
         prompt = prompt_template.format(**doc)
         questions_raw = client_openai.chat.completions.create(
-            model="gpt-4", messages=[{"role": "user", "content": prompt}]
+            model=gpt_model_name,
+            messages=[{"role": "user", "content": prompt}],
         )
         questions_raw = questions_raw.choices[0].message.content
         questions = json.loads(questions_raw)
@@ -91,7 +99,5 @@ def generate_evaluation_data(
 if __name__ == "__main__":
     generate_evaluation_data()
 
-    # ESSA BOSTA PAREOU DE FUNCIONAR!
-    # talvez seja o qdrant que tava desconectado kkk
     # depois de gerar os dados melhor eu confirmar se algum registro
     # da coluna solicitations possui a string solicitation

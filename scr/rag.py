@@ -7,6 +7,12 @@ from fastembed import TextEmbedding
 from openai import OpenAI
 from qdrant_client import QdrantClient
 
+logging.basicConfig(
+    level=logging.INFO,
+    filename="app.log",
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -27,7 +33,7 @@ client_openai = OpenAI()
 )
 @click.option(
     "--top-k",
-    default=5,
+    default=10,
     help="Number of movies to recommend",
 )
 @click.option(
@@ -104,7 +110,7 @@ def recommend_movies(
     #     with_payload=True,
     # )
 
-    return answer
+    return vector_recommendations  # answer
 
 
 if __name__ == "__main__":
