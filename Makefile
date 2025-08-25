@@ -3,13 +3,13 @@ VENV_NAME = chat-env
 PYTHON = python
 DATA_DIR = data
 RAW_DATA = $(DATA_DIR)/raw#/dataset.csv # será que é tão necessário assim?
-PROCESSED_DATA = $(DATA_DIR)/processed/model_data.csv
+EVAL_DATA = $(DATA_DIR)/processed/ground-truth-retrieval.csv
 
 COLLECTION_NAME = movies
 EMBEDDING_DIMENSIONALITY = 384
 MODEL_NAME = BAAI/bge-small-en
 TOP_K = 10
-QUERY = "a non-american romantic movie" # "why is submarine a good movie?"
+QUERY = "why is submarine a good movie?" # "a non-american romantic movie"
 N_TESTS = 3
 GPT_MODEL_NAME = "gpt-4o-mini"
 
@@ -32,9 +32,17 @@ extract-data:
 create-qdrant-collection:
 	$(PYTHON) scr/create_qdrant_collection.py --collection-name $(COLLECTION_NAME) --embedding-dimensionality $(EMBEDDING_DIMENSIONALITY) --model-name $(MODEL_NAME) --path-source $(RAW_DATA)
 
-## Qdrant Search
-qdrant-search:
-	$(PYTHON) scr/rag.py --model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K) --query $(QUERY)
+## Retrieval Evaluation
+retrieval_eval:
+	$(PYTHON) scr/retrieval_eval.py --ground-truth-path $(EVAL_DATA) --emb-model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K)
+
+## RAG Evaluation
+rag_eval:
+	$(PYTHON) scr/rag_eval.py --ground-truth-path $(EVAL_DATA) --emb-model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K) --gpt-model-name $(GPT_MODEL_NAME)
+
+## Rag
+rag:
+	$(PYTHON) scr/rag.py --emb-model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K) --query $(QUERY)
 
 ## Data Preparation
 generate-evaluation-data: # $(RAW_DATA)
