@@ -5,6 +5,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient
 from tqdm import tqdm
+
 from utils.vector_search import VectorSearch
 
 # pylint: disable=duplicate-code

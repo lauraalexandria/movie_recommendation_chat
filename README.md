@@ -106,7 +106,7 @@ mlflow server --backend-store-uri sqlite:///mlflow.db
 Open an API that's possible to include a csv file with the data PROCESSED and returns the predictions values. In `predict-csv` and `Try it out`
 
 ``` bash
-uvicorn scr.api_csv:app --reload
+uvicorn src.api_csv:app --reload
 ```
 
 With the API open, you can also add the data with bash:

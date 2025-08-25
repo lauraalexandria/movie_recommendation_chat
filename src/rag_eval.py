@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from qdrant_client import QdrantClient
 from tqdm import tqdm
+
 from utils.rag_engine import RAGEngine
 
 # pylint: disable=duplicate-code

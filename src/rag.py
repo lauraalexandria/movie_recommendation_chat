@@ -1,4 +1,5 @@
 import click
+
 from utils.rag_engine import RAGEngine
 
 
