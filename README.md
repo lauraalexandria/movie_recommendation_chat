@@ -23,6 +23,7 @@ The project includes:
 * Docker
 * Qdrant
 * OpenAI API
+* FastAPI
 
 ### Setup project with Makefile
 
@@ -65,7 +66,7 @@ docker run -p 6333:6333 qdrant/qdrant
 docker-compose down -v; docker-compose build; docker-compose up -d
 ```
 
-#### Acess Points
+#### Access Points
 
 | Service         | URL                        | Credentials                                          |
 |-----------------|----------------------------|------------------------------------------------------|
@@ -103,15 +104,15 @@ mlflow server --backend-store-uri sqlite:///mlflow.db
 
 ### FastAPI
 
-Open an API that's possible to include a csv file with the data PROCESSED and returns the predictions values. In `predict-csv` and `Try it out`
+Open an API that's possible to include the requests and receive the model answers.
 
 ``` bash
-uvicorn src.api_csv:app --reload
+uvicorn src.api:app --reload
 ```
 
 With the API open, you can also add the data with bash:
 ``` bash
-curl -X POST "http://localhost:8000/predict-csv"   -H "Content-Type: multipart/form-data"   -F "file=@data/processed/x_val.csv"
+curl -X POST "http://localhost:8000/rag/query"   -H "Content-Type: application/json"  -d '{"query": "i wanna a few comedy movies for quiet people ou", "top_k": 10}'
 ```
 
 ### Deploy in Docker

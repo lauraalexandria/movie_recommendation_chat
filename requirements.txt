@@ -19,3 +19,4 @@ langchain_openai
 kaggle
 #logging
 click
+fastapi
