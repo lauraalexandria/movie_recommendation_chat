@@ -32,6 +32,11 @@ extract-data:
 create-qdrant-collection:
 	$(PYTHON) src/create_qdrant_collection.py --collection-name $(COLLECTION_NAME) --embedding-dimensionality $(EMBEDDING_DIMENSIONALITY) --model-name $(MODEL_NAME) --path-source $(RAW_DATA)
 
+## Data Preparation
+generate-evaluation-data: # $(RAW_DATA)
+	$(PYTHON) src/generate_evaluation_data.py --path-source $(DATA_DIR) --n-tests $(N_TESTS) --gpt-model-name $(GPT_MODEL_NAME)
+
+
 ## Retrieval Evaluation
 retrieval_eval:
 	$(PYTHON) src/retrieval_eval.py --ground-truth-path $(EVAL_DATA) --emb-model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K)
@@ -44,13 +49,9 @@ rag_eval:
 rag:
 	$(PYTHON) src/rag.py --emb-model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K) --query $(QUERY)
 
-## Data Preparation
-generate-evaluation-data: # $(RAW_DATA)
-	$(PYTHON) src/generate_evaluation_data.py --path-source $(DATA_DIR) --n-tests $(N_TESTS) --gpt-model-name $(GPT_MODEL_NAME)
-
-## Feature Engineering
-feat-eng: # $(RAW_DATA)
-	$(PYTHON) src/feature_engineering.py
+## ChatBot
+chatbot:
+	streamlit run src/chatbot.py -- --emb-model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K) --gpt-model-name $(GPT_MODEL_NAME)
 
 ## Create target ans split data
 target-split: # $(RAW_DATA)

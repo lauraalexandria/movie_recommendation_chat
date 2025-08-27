@@ -75,6 +75,7 @@ docker-compose down -v; docker-compose build; docker-compose up -d
 | Adminer         | http://localhost:8080      |PostgreSQL/db/postgre/${POSTGRES_PASSWORD}/${DB_NAME} |
 | Grafana         | http://localhost:3000      | admin/admin                                          |
 | FastAPI         | http://localhost:8000/docs | -                                                    |
+| Chat            | http://localhost:8501      | -                                                    |
 
 ### Model
 
@@ -113,6 +114,14 @@ uvicorn src.api:app --reload
 With the API open, you can also add the data with bash:
 ``` bash
 curl -X POST "http://localhost:8000/rag/query"   -H "Content-Type: application/json"  -d '{"query": "i wanna a few comedy movies for quiet people ou", "top_k": 10}'
+```
+
+### Chat with Streamlit
+
+Creates the UI interface where the user can make your solicitations and keeps the historic.
+
+```
+make chatbot
 ```
 
 ### Deploy in Docker

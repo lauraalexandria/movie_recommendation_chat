@@ -29,7 +29,7 @@ class RAGEngine:
             collection_name=collection_name, emb_model_name=emb_model_name
         )
 
-    def create_context(self, query: str, top_k: int = 3) -> str:
+    def create_context(self, query: str, top_k: int = 10) -> str:
         """Create context from vector search"""
         results = self.vector_search.search(query, top_k=top_k)
 
