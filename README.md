@@ -24,6 +24,7 @@ The project includes:
 * Qdrant
 * OpenAI API
 * FastAPI
+* Streamlit
 
 ### Setup project with Makefile
 
@@ -148,4 +149,4 @@ conda deactivate
 * Como gerar os dados de base de comparação???
 * se eu passar uma solicitação do tipo quero um filme igual a esse, acho que não vai dar certo...
 * [ ] Bring more movies from Wiki - e os plots da wikipedia são bem grandes, né?
-* [ ] Add ratings.csv and generate data to repo
+* [ ] Add ratings.csv and generate data to repo? and my logged tests?

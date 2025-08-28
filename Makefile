@@ -51,7 +51,7 @@ rag:
 
 ## ChatBot
 chatbot:
-	streamlit run src/chatbot.py -- --emb-model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K) --gpt-model-name $(GPT_MODEL_NAME)
+	streamlit run ui/chatbot.py -- --emb-model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K) --gpt-model-name $(GPT_MODEL_NAME)
 
 ## Create target ans split data
 target-split: # $(RAW_DATA)

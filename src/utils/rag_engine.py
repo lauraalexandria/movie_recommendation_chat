@@ -28,13 +28,16 @@ class RAGEngine:
         self.vector_search = VectorSearch(
             collection_name=collection_name, emb_model_name=emb_model_name
         )
+        self.retrieved_documents = []
 
     def create_context(self, query: str, top_k: int = 10) -> str:
         """Create context from vector search"""
-        results = self.vector_search.search(query, top_k=top_k)
+        self.retrieved_documents = self.vector_search.search(
+            query, top_k=top_k
+        )
 
         context = ""
-        for movie in results:
+        for movie in self.retrieved_documents:
             context += f"Title: {movie["title"]}:\n"
             context += f"Director: {movie["director"]}\n"
             context += f"Plot: {movie["plot"]}\n\n"
