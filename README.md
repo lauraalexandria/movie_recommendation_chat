@@ -114,7 +114,7 @@ uvicorn src.api:app --reload
 
 With the API open, you can also add the data with bash:
 ``` bash
-curl -X POST "http://localhost:8000/rag/query"   -H "Content-Type: application/json"  -d '{"query": "i wanna a few comedy movies for quiet people ou", "top_k": 10}'
+curl -X POST "http://localhost:8000/rag/query"   -H "Content-Type: application/json"  -d '{"query": "i wanna a few comedy movies for quiet people", "top_k": 10}'
 ```
 
 ### Chat with Streamlit

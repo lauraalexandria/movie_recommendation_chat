@@ -63,6 +63,7 @@ def create_collection(
 
     logging.info("Embedding select movies information")
     for _, row in df.iterrows():
+
         text = (
             f"{row['Title']} {row['Genre']} {row['Director']} {row['Plot']}"
         )
@@ -81,6 +82,7 @@ def create_collection(
                         "cast": row["Cast"],
                         "genres": row["Genre"],
                         "plot": row["Plot"],
+                        # "score": row["corr"]
                     },
                 }
             ],

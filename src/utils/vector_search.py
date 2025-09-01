@@ -47,7 +47,18 @@ class VectorSearch:
             limit=top_k,
         )
 
-        return [hit.payload for hit in search_results.points]
+        # print([hit.score for hit in search_results.points])
+        # score = getattr(search_results.points, 'score', 0.0)
+        # final_dict = [hit.payload for hit in search_results.points]
+        # final_dict["score"] = score
+
+        final_dicts = []
+        for hit in search_results.points:
+            aux_dict = hit.payload
+            aux_dict["score"] = hit.score
+            final_dicts.append(aux_dict)
+
+        return final_dicts
 
     # def hybrid_search(self, query: str, top_k: int = 5,
     #  filters: Dict = None) -> List[Dict]:

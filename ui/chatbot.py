@@ -16,11 +16,9 @@ load_dotenv()
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 
 # ERROS
-# Se eu dou um feedback vai para o registro errado
-# Não consigo comentar E dar a nota
-# O cálculo da similaridade sempre aparece igual a zero, eita...
+# Só registra comentário so eu colocar mãozinha
 # Curioso como Coherence sempre aparece como sugestão... ou sou eu?
-# refatoração das pastas
+# traduzir pro inglês + refatoração das pastas + pasta pros logs
 
 # pylint: disable=too-many-arguments, too-many-positional-arguments
 # pylint: disable=too-many-locals, too-many-statements, broad-exception-caught
@@ -37,8 +35,6 @@ class EnhancedChatMonitor:
         retrieved_docs: List[Dict],
         llm_response: str,
         response_time: float,
-        user_feedback: str = None,
-        feedback_comment: str = None,
     ) -> Dict[str, Any]:
         """Register complete interaction metadata"""
 
@@ -47,10 +43,14 @@ class EnhancedChatMonitor:
         for doc in retrieved_docs:
             doc_metadata.append(
                 {
-                    "doc_id": doc.get("id", "unknown"),
+                    # "doc_id": doc.get("id", "unknown"),
                     "title": doc.get("title", "No title"),
-                    "source": doc.get("source", "unknown"),
-                    "similarity_score": doc.get("score", 0),
+                    "year": doc.get("year", "unknown"),
+                    "origin": doc.get("origin", "unknown"),
+                    "director": doc.get("director", "unknown"),
+                    "cast": doc.get("cast", "unknown"),
+                    "genres": doc.get("genres", "unknown"),
+                    "similarity_score": doc.get("score", None),
                     "content_preview": (
                         str(doc.get("content", ""))[:100] + "..."
                         if doc.get("content")
@@ -68,8 +68,6 @@ class EnhancedChatMonitor:
             "retrieved_count": len(retrieved_docs),
             "llm_response": llm_response,
             "response_time_seconds": round(response_time, 2),
-            "user_feedback": user_feedback,
-            "feedback_comment": feedback_comment,
             "context_used": [doc["title"] for doc in doc_metadata],
             "average_similarity": (
                 round(
@@ -88,15 +86,32 @@ class EnhancedChatMonitor:
 
         return log_entry
 
+    def log_feedback(
+        self,
+        user_query: str,
+        llm_response: str,
+        feedback: str,
+        comment: str = None,
+    ):
+        """Log apenas do feedback"""
+        feedback_entry = {
+            "timestamp": datetime.datetime.now().isoformat(),
+            "user_query": user_query,
+            "llm_response": llm_response,
+            "feedback": feedback,
+            "comment": comment,
+        }
+
+        with open("feedback_logs.jsonl", "a", encoding="utf-8") as f:
+            f.write(json.dumps(feedback_entry, ensure_ascii=False) + "\n")
+
 
 def initialize_session_state():
-    """Initialize session state"""
+    """Inicializa o estado da sessão"""
     if "messages" not in st.session_state:
         st.session_state.messages = []
-    if "feedback_given" not in st.session_state:
-        st.session_state.feedback_given = {}
-    if "current_query" not in st.session_state:
-        st.session_state.current_query = None
+    if "feedback_data" not in st.session_state:
+        st.session_state.feedback_data = {}  # {message_index: feedback}
 
 
 def display_chat_metrics(response_time: float, retrieved_docs: List[Dict]):
@@ -132,30 +147,41 @@ def display_chat_metrics(response_time: float, retrieved_docs: List[Dict]):
 
 
 def get_user_feedback():
-    """Interface para feedback do usuário"""
-    st.write("---")
-    st.write("💭 Esta resposta foi útil?")
+    """Interface para feedback do usuário - APENAS para a última mensagem"""
+    # Só mostra se for a última mensagem e não tiver feedback ainda
 
-    col1, col2, col3 = st.columns([1, 1, 2])
+    bottom = None
+    feedback_comment = None
 
-    with col1:
-        if st.button("👍", use_container_width=True, key="feedback_positive"):
-            return "positive", None
+    if (
+        len(st.session_state.messages) > 1
+        and st.session_state.messages[-1]["role"] == "assistant"
+        and "feedback" not in st.session_state.messages[-1]
+    ):
 
-    with col2:
-        if st.button("👎", use_container_width=True, key="feedback_negative"):
-            return "negative", None
+        st.write("---")
+        st.write("💭 Esta resposta foi útil?")
 
-    with col3:
-        feedback_comment = st.text_input(
-            "Comentário (opcional):",
-            key="feedback_comment",
-            placeholder="O que poderia ser melhorado?",
-        )
-        if feedback_comment:
-            return "with_comment", feedback_comment
+        col1, col2, col3, _ = st.columns([1, 1, 2, 4])
 
-    return None, None
+        with col1:
+            if st.button("👍", key="feedback_positive"):
+                bottom = "positive"
+                # return "positive", None
+
+        with col2:
+            if st.button("👎", key="feedback_negative"):
+                bottom = "negative"
+                # return "negative", None
+
+        with col3:
+            feedback_comment = st.text_input(
+                "Comentário (opcional):",
+                key="feedback_comment",
+                placeholder="O que poderia ser melhorado?",
+            )
+
+    return bottom, feedback_comment
 
 
 @click.command()
@@ -228,12 +254,12 @@ def main(collection_name, emb_model_name, top_k, gpt_model_name):
             except Exception as e:
                 st.error(f"Error loading logs: {e}")
 
-    # To show chat history
+    # Display chat history
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-            # To show feedback
+            # Show feedback if exists
             if message.get("feedback"):
                 emoji = "👍" if message["feedback"] == "positive" else "👎"
                 st.caption(f"*Your feedback: {emoji}*")
@@ -265,59 +291,51 @@ def main(collection_name, emb_model_name, top_k, gpt_model_name):
                 datetime.datetime.now() - start_time
             ).total_seconds()
 
-        # Resposta do assistente
-        with st.chat_message("assistant"):
-            st.markdown(response)
-            st.session_state.messages.append(
-                {"role": "assistant", "content": response}
-            )
+        # Add assistant response WITHOUT feedback initially
+        st.session_state.messages.append(
+            {
+                "role": "assistant",
+                "content": response,
+                # No feedback field yet
+            }
+        )
 
-            # Mostrar métricas
-            display_chat_metrics(response_time, retrieved_docs)
+        # Log interaction
+        monitor.log_interaction(
+            user_query=prompt,
+            retrieved_docs=retrieved_docs,
+            llm_response=response,
+            response_time=response_time,
+        )
 
-            # Registrar interação (sem feedback ainda)
-            log_entry = monitor.log_interaction(
-                user_query=prompt,
-                retrieved_docs=retrieved_docs,
-                llm_response=response,
-                response_time=response_time,
-            )
+        # Force rerun to show new message and feedback interface
+        st.rerun()
 
-            # Store interaction metadata
-            st.session_state.last_interaction = log_entry
+    # Show feedback interface ONLY for the last message
+    if (
+        len(st.session_state.messages) > 0
+        and st.session_state.messages[-1]["role"] == "assistant"
+        and "feedback" not in st.session_state.messages[-1]
+    ):
 
-        # Solicitar feedback
         feedback, comment = get_user_feedback()
         if feedback:
-            # Atualizar log com feedback
-            updated_log = monitor.log_interaction(
-                user_query=prompt,
-                retrieved_docs=retrieved_docs,
-                llm_response=response,
-                response_time=response_time,
-                user_feedback=(
-                    feedback if feedback != "with_comment" else "commented"
-                ),
-                feedback_comment=comment,
+            # Add feedback to the last message
+            st.session_state.messages[-1]["feedback"] = feedback
+
+            # Log feedback
+            monitor.log_feedback(
+                user_query=st.session_state.messages[-2][
+                    "content"
+                ],  # Last user query
+                llm_response=st.session_state.messages[-1][
+                    "content"
+                ],  # Last assistant response
+                feedback=feedback,
+                comment=comment,
             )
 
-            # Marcar feedback como dado para esta mensagem
-            st.session_state.feedback_given[
-                len(st.session_state.messages) - 1
-            ] = feedback
-            # Store log entry for feedback
-            st.session_state.last_interaction = updated_log
-
-            # Feedback visual
-            if feedback == "positive":
-                st.success("✅ Obrigado pelo feedback positivo!")
-            elif feedback == "negative":
-                st.warning("📝 Obrigado pelo feedback. Vamos melhorar!")
-            else:
-                st.info("💡 Obrigado pelo comentário detalhado!")
-
-            # Atualizar mensagem com feedback
-            st.session_state.messages[-1]["feedback"] = feedback
+            # Rerun to update UI
             st.rerun()
 
 
