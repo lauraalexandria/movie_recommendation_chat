@@ -1,7 +1,9 @@
 import datetime
 import json
 import os
+import sys
 import uuid
+from pathlib import Path
 from typing import Any, Dict, List
 
 import click
@@ -9,23 +11,23 @@ import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
 
-from utils.rag_engine import RAGEngine
+# pylint: disable=relative-beyond-top-level
+from src.rag_engine import RAGEngine
+
+current_dir = Path(__file__).parent
+root_dir = current_dir.parent
+sys.path.append(str(root_dir))
 
 load_dotenv()
 
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
-
-# ERROS
-# Só registra comentário so eu colocar mãozinha
-# Curioso como Coherence sempre aparece como sugestão... ou sou eu?
-# traduzir pro inglês + refatoração das pastas + pasta pros logs
 
 # pylint: disable=too-many-arguments, too-many-positional-arguments
 # pylint: disable=too-many-locals, too-many-statements, broad-exception-caught
 
 
 class EnhancedChatMonitor:
-    def __init__(self, log_file: str = "chat_logs.jsonl"):
+    def __init__(self, log_file: str = "logs/chat/chat_logs.jsonl"):
         self.log_file = log_file
         self.session_id = str(uuid.uuid4())
 
@@ -43,7 +45,6 @@ class EnhancedChatMonitor:
         for doc in retrieved_docs:
             doc_metadata.append(
                 {
-                    # "doc_id": doc.get("id", "unknown"),
                     "title": doc.get("title", "No title"),
                     "year": doc.get("year", "unknown"),
                     "origin": doc.get("origin", "unknown"),
@@ -93,7 +94,7 @@ class EnhancedChatMonitor:
         feedback: str,
         comment: str = None,
     ):
-        """Log apenas do feedback"""
+        """Log user feedback when entered"""
         feedback_entry = {
             "timestamp": datetime.datetime.now().isoformat(),
             "user_query": user_query,
@@ -102,28 +103,30 @@ class EnhancedChatMonitor:
             "comment": comment,
         }
 
-        with open("feedback_logs.jsonl", "a", encoding="utf-8") as f:
+        with open(
+            "logs/chat/feedback_logs.jsonl", "a", encoding="utf-8"
+        ) as f:
             f.write(json.dumps(feedback_entry, ensure_ascii=False) + "\n")
 
 
 def initialize_session_state():
-    """Inicializa o estado da sessão"""
+    """Initialize session state"""
     if "messages" not in st.session_state:
         st.session_state.messages = []
     if "feedback_data" not in st.session_state:
-        st.session_state.feedback_data = {}  # {message_index: feedback}
+        st.session_state.feedback_data = {}
 
 
 def display_chat_metrics(response_time: float, retrieved_docs: List[Dict]):
-    """Exibe métricas da conversa"""
-    with st.expander("📊 Métricas desta resposta"):
+    """Show metrics chat"""
+    with st.expander("📊 Metrics related to the answer:"):
         col1, col2, col3 = st.columns(3)
 
         with col1:
-            st.metric("⏱️ Tempo", f"{response_time:.2f}s")
+            st.metric("⏱️ Response time", f"{response_time:.2f}s")
 
         with col2:
-            st.metric("📄 Documentos", len(retrieved_docs))
+            st.metric("📄 Documents used", len(retrieved_docs))
 
         with col3:
             avg_score = (
@@ -132,23 +135,20 @@ def display_chat_metrics(response_time: float, retrieved_docs: List[Dict]):
                 if retrieved_docs
                 else 0
             )
-            st.metric("⭐ Similaridade", f"{avg_score:.3f}")
+            st.metric("⭐ Similarity", f"{avg_score:.3f}")
 
-        # Mostrar documentos recuperados
-        st.write("**Documentos utilizados:**")
+        # Show retrieved documents
+        st.write("**Used Documents:**")
         for i, doc in enumerate(retrieved_docs, 1):
-            with st.expander(
-                f"Documento {i}: {doc.get('title', 'Sem título')}"
-            ):
-                st.write(f"**Fonte:** {doc.get('source', 'Desconhecida')}")
-                st.write(f"**Similaridade:** {doc.get('score', 0):.3f}")
+            with st.expander(f"Title {i}: {doc.get('title', 'No title')}"):
+                st.write(f"**Source:** {doc.get('source', 'Unknown')}")
+                st.write(f"**Similarity:** {doc.get('score', 0):.3f}")
                 if doc.get("content"):
-                    st.write(f"**Conteúdo:** {doc['content'][:200]}...")
+                    st.write(f"**Content:** {doc['content'][:200]}...")
 
 
 def get_user_feedback():
-    """Interface para feedback do usuário - APENAS para a última mensagem"""
-    # Só mostra se for a última mensagem e não tiver feedback ainda
+    """Feedback Interface for user - ONLY for the lanst message"""
 
     bottom = None
     feedback_comment = None
@@ -167,18 +167,16 @@ def get_user_feedback():
         with col1:
             if st.button("👍", key="feedback_positive"):
                 bottom = "positive"
-                # return "positive", None
 
         with col2:
             if st.button("👎", key="feedback_negative"):
                 bottom = "negative"
-                # return "negative", None
 
         with col3:
             feedback_comment = st.text_input(
-                "Comentário (opcional):",
+                "Comentary (opcional):",
                 key="feedback_comment",
-                placeholder="O que poderia ser melhorado?",
+                placeholder="Any comment?",
             )
 
     return bottom, feedback_comment
@@ -210,7 +208,6 @@ def main(collection_name, emb_model_name, top_k, gpt_model_name):
     st.set_page_config(page_title="Chat RAG", page_icon="🤖", layout="wide")
 
     # Engine RAG initialization
-    # (?) @st.cache_resource
     initialize_session_state()
     monitor = EnhancedChatMonitor()
     rag_engine = RAGEngine(
@@ -245,7 +242,9 @@ def main(collection_name, emb_model_name, top_k, gpt_model_name):
         # Usage logs button (development only)
         if st.button("📊 See usage logs ", disabled=not DEBUG):
             try:
-                logs_df = pd.read_json("chat_logs.jsonl", lines=True)
+                logs_df = pd.read_json(
+                    "logs/chat/chat_logs.jsonl", lines=True
+                )
                 st.dataframe(logs_df)
             except FileNotFoundError:
                 st.warning("No logs available yet. The file doesn't exist.")
@@ -275,10 +274,7 @@ def main(collection_name, emb_model_name, top_k, gpt_model_name):
         with st.spinner("🔍 Buscando informações..."):
             start_time = datetime.datetime.now()
 
-            # Fase de retrieval
-            # retrieved_docs = rag_engine.retrieve_documents(prompt, top_k=3)
-
-            # Fase de generation
+            # Generate response step
             context = rag_engine.create_context(prompt, top_k=top_k)
             retrieved_docs = rag_engine.retrieved_documents
             response = rag_engine.generate_response(
@@ -293,11 +289,7 @@ def main(collection_name, emb_model_name, top_k, gpt_model_name):
 
         # Add assistant response WITHOUT feedback initially
         st.session_state.messages.append(
-            {
-                "role": "assistant",
-                "content": response,
-                # No feedback field yet
-            }
+            {"role": "assistant", "content": response}
         )
 
         # Log interaction

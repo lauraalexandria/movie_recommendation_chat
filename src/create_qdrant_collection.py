@@ -1,4 +1,5 @@
 import logging
+import os
 
 import click
 import pandas as pd
@@ -7,7 +8,7 @@ from qdrant_client import QdrantClient, models
 
 logging.basicConfig(
     level=logging.INFO,
-    filename="app.log",
+    filename=os.path.join("logs/system", "app.log"),
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 

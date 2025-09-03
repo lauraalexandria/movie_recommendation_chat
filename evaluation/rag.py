@@ -1,6 +1,6 @@
 import click
 
-from utils.rag_engine import RAGEngine
+from src.rag_engine import RAGEngine
 
 
 @click.command()

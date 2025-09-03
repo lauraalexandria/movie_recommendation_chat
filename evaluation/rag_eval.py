@@ -9,12 +9,12 @@ from openai import OpenAI
 from qdrant_client import QdrantClient
 from tqdm import tqdm
 
-from utils.rag_engine import RAGEngine
+from src.rag_engine import RAGEngine
 
 # pylint: disable=duplicate-code
 logging.basicConfig(
     level=logging.INFO,
-    filename="app.log",
+    filename=os.path.join("logs/system", "app.log"),
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 

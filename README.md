@@ -90,12 +90,6 @@ This single make command includes:
 make -f Makefile all-model-steps
 ```
 
-### Monitoring model
-
-Creates a evidently html report about the current and previous predictions. It is also logged in MLFlow.
-```
-make -f Makefile monitor
-```
 
 ### Open MLFlow
 
@@ -123,6 +117,50 @@ Creates the UI interface where the user can make your solicitations and keeps th
 
 ```
 make chatbot
+```
+
+The chatbot interface includes a feedback interface that also register those feedbacks in order to "feed" the monitoring dashboard. The feedback is based in a positive/negative button and a optional comment.
+
+Those data follows those formats
+
+{
+    "title": doc.get("title", "No title"),
+    "year": doc.get("year", "unknown"),
+    "origin": doc.get("origin", "unknown"),
+    "director": doc.get("director", "unknown"),
+    "cast": doc.get("cast", "unknown"),
+    "genres": doc.get("genres", "unknown"),
+    "similarity_score": doc.get("score", None),
+    "content_preview": "Content used"
+}
+
+{
+    "timestamp": datetime.datetime.now().isoformat(),
+    "session_id": self.session_id,
+    "user_query": user_query,
+    "retrieved_documents": doc_metadata,
+    "retrieved_count": len(retrieved_docs),
+    "llm_response": llm_response,
+    "response_time_seconds": round(response_time, 2),
+    "context_used": [doc["title"] for doc in doc_metadata],
+    "average_similarity": Average similarity
+}
+
+For feedback:
+
+{
+    "timestamp": datetime.datetime.now().isoformat(),
+    "user_query": user_query,
+    "llm_response": llm_response,
+    "feedback": feedback,
+    "comment": comment,
+}
+
+### Monitoring model
+
+
+```
+make -f Makefile monitor
 ```
 
 ### Deploy in Docker

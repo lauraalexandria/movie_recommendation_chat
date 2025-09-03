@@ -1,17 +1,17 @@
 import logging
+import os
 
 import click
 import pandas as pd
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient
 from tqdm import tqdm
-
 from utils.vector_search import VectorSearch
 
 # pylint: disable=duplicate-code
 logging.basicConfig(
     level=logging.INFO,
-    filename="app.log",
+    filename=os.path.join("logs/system", "app.log"),
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 

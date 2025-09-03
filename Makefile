@@ -34,20 +34,20 @@ create-qdrant-collection:
 
 ## Data Preparation
 generate-evaluation-data: # $(RAW_DATA)
-	$(PYTHON) src/generate_evaluation_data.py --path-source $(DATA_DIR) --n-tests $(N_TESTS) --gpt-model-name $(GPT_MODEL_NAME)
+	$(PYTHON) -m evaluation.generate_evaluation_data --path-source $(DATA_DIR) --n-tests $(N_TESTS) --gpt-model-name $(GPT_MODEL_NAME)
 
 
 ## Retrieval Evaluation
 retrieval_eval:
-	$(PYTHON) src/retrieval_eval.py --ground-truth-path $(EVAL_DATA) --emb-model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K)
+	$(PYTHON) -m evaluation.retrieval_eval --ground-truth-path $(EVAL_DATA) --emb-model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K)
 
 ## RAG Evaluation
 rag_eval:
-	$(PYTHON) src/rag_eval.py --ground-truth-path $(EVAL_DATA) --emb-model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K) --gpt-model-name $(GPT_MODEL_NAME)
+	$(PYTHON) -m evaluation.rag_eval --ground-truth-path $(EVAL_DATA) --emb-model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K) --gpt-model-name $(GPT_MODEL_NAME)
 
 ## Rag
 rag:
-	$(PYTHON) src/rag.py --emb-model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K) --query $(QUERY)
+	$(PYTHON) -m evaluation.rag --emb-model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K) --query $(QUERY)
 
 ## ChatBot
 chatbot:

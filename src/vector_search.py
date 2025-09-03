@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Dict, List
 
 from dotenv import load_dotenv
@@ -8,7 +9,7 @@ from qdrant_client import QdrantClient
 # pylint: disable=duplicate-code
 logging.basicConfig(
     level=logging.INFO,
-    filename="app.log",
+    filename=os.path.join("logs/system", "app.log"),
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 

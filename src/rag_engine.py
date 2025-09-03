@@ -9,7 +9,7 @@ from .vector_search import VectorSearch
 # pylint: disable=duplicate-code
 logging.basicConfig(
     level=logging.INFO,
-    filename="app.log",
+    filename=os.path.join("logs/system", "app.log"),
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
