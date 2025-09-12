@@ -6,10 +6,18 @@ from openai import OpenAI
 
 from .vector_search import VectorSearch
 
+# ✅ Use variável de ambiente para o log path
+LOG_DIR = os.getenv(
+    "LOG_DIR", "logs/system"
+)  # Default para 'logs' se não definido
+
+# Garante que o diretório existe
+# Path(LOG_DIR).mkdir(exist_ok=True)
+
 # pylint: disable=duplicate-code
 logging.basicConfig(
     level=logging.INFO,
-    filename=os.path.join("logs/system", "app.log"),
+    filename=os.path.join(LOG_DIR, "app.log"),
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
@@ -26,7 +34,10 @@ class RAGEngine:
         emb_model_name: str = "BAAI/bge-small-en",
     ):
         self.vector_search = VectorSearch(
-            collection_name=collection_name, emb_model_name=emb_model_name
+            host="qdrant",
+            port=6333,
+            collection_name=collection_name,
+            emb_model_name=emb_model_name,
         )
         self.retrieved_documents = []
 

@@ -15,8 +15,6 @@ logging.basicConfig(
 
 load_dotenv()
 
-client_qdrant = QdrantClient("http://localhost:6333")
-
 
 class VectorSearch:
     def __init__(

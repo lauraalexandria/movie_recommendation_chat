@@ -4,7 +4,8 @@ import os
 import click
 import pandas as pd
 from dotenv import load_dotenv
-from qdrant_client import QdrantClient
+
+# from qdrant_client import QdrantClient
 from tqdm import tqdm
 from utils.vector_search import VectorSearch
 
@@ -16,8 +17,6 @@ logging.basicConfig(
 )
 
 load_dotenv()
-
-client_qdrant = QdrantClient("http://localhost:6333")
 
 
 def hit_rate(relevance_total):
@@ -70,7 +69,10 @@ def evaluate(ground_truth_path, collection_name, emb_model_name, top_k):
     ground_truth_data = ground_truth_data.to_dict(orient="records")
 
     vector_search = VectorSearch(
-        collection_name=collection_name, emb_model_name=emb_model_name
+        host="qdrant",
+        port=6333,
+        collection_name=collection_name,
+        emb_model_name=emb_model_name,
     )
     relevance_test_total = []
 

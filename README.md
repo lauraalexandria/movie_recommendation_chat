@@ -67,6 +67,7 @@ docker run -p 6333:6333 qdrant/qdrant
 docker-compose down -v; docker-compose build; docker-compose up -d
 ```
 
+
 #### Access Points
 
 | Service         | URL                        | Credentials                                          |
@@ -103,7 +104,7 @@ mlflow server --backend-store-uri sqlite:///mlflow.db
 Open an API that's possible to include the requests and receive the model answers.
 
 ``` bash
-uvicorn src.api:app --reload
+uvicorn api.api:app --reload
 ```
 
 With the API open, you can also add the data with bash:
@@ -172,7 +173,7 @@ docker build -t <SELECT NAME>:latest .
 
 2. Run model in a container
 ```
-docker run -p 8080:8080 <SELECT NAME>:latest
+docker run -d -p 8000:8000 --env-file .env <SELECT NAME>
 ```
 
 

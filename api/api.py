@@ -9,6 +9,12 @@ engine = RAGEngine(
 )
 
 
+# Adicione esta rota raiz
+@app.get("/")
+async def root():
+    return {"message": "API RAG Engine está funcionando!", "status": "online"}
+
+
 class QueryRequest(BaseModel):
     query: str
     top_k: int = 10

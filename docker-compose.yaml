@@ -1,0 +1,89 @@
+volumes:
+  db_data:
+  grafana_data: {}
+  prometheus_data: {}
+  qdrant_data:
+    driver: local
+
+networks:
+  rag-network:
+    driver: bridge
+
+services:
+
+  qdrant:
+    image: qdrant/qdrant:v1.15.1
+    container_name: qdrant_service
+    ports:
+      - "6333:6333"
+    volumes:
+      - ./qdrant_storage:/qdrant/storage
+    networks:
+      - rag-network
+
+  # Estou testando os dockers separadamente (para rodar ele minha memória saiu de 40 GB para 23 GB - e se eu reiniciar?)
+  # Agora tenho que puxar do qdrant do container? (e continua rodando quando passo no terminal? DEU ERRO PARA PUXAR A FUNÇÃO DO VECTOR SEARCH, NÃO ACHA!)
+  # Confirma como funciona isso do script do meu modelo está no container sozinho
+  # trocar os scripts de forma que eles puxem do container, precisa em todos? até testes?
+  # testar o docker do streamlit separado
+  # colocar o app no docker-compose
+  # entender quanto um container pode ocupar de memória
+
+  rag-api:
+    build:
+      context: .  # Contexto raiz do projeto
+      dockerfile: api/Dockerfile  # Caminho para o Dockerfile
+    container_name: rag-api
+    env_file:
+      - .env  # Arquivo com variáveis de ambiente
+    volumes:
+      - ./src:/app/src #rag-engine/src:/app
+      - ./logs:/app/logs
+    environment:
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+    depends_on:
+      - qdrant
+    networks:
+      - rag-network
+    restart: unless-stopped
+
+  # db:
+  #   image: postgres
+  #   restart: always
+  #   environment:
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #   ports:
+  #     - "5432:5432"
+  #   networks:
+  #     - back-tier
+  #   volumes:
+  #     - db_data:/var/lib/postgresql/data
+
+  # adminer:
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - "8080:8080"
+  #   command: php -S 0.0.0.0:8080 /var/www/html/adminer.php
+  #   networks:
+  #     - back-tier
+  #     - front-tier
+  #   depends_on:
+  #     - db
+
+  # grafana:
+  #   image: grafana/grafana-enterprise
+  #   user: "472"
+  #   ports:
+  #     - "3000:3000"
+  #   # volumes:
+  #   #   - ./grafana/config/grafana_datasources.yaml:/etc/grafana/provisioning/datasources/datasource.yaml:ro
+  #   #   - ./grafana/config/grafana_dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml:ro
+  #   #   - ./grafana/dashboards:/opt/grafana/dashboards
+  #   networks:
+  #     - back-tier
+  #     - front-tier
+  #   restart: always
+  #   depends_on:
+  #     - db

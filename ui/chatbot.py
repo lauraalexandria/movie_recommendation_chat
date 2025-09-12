@@ -1,22 +1,24 @@
 import datetime
 import json
 import os
-import sys
-import uuid
-from pathlib import Path
+
+# import sys
+# from pathlib import Path
 from typing import Any, Dict, List
 
 import click
 import pandas as pd
 import streamlit as st
+import uuid6
 from dotenv import load_dotenv
 
 # pylint: disable=relative-beyond-top-level
-from src.rag_engine import RAGEngine
+from src.rag_engine import RAGEngine  # AINDA DÁ ERRO NO FLAKE!
 
-current_dir = Path(__file__).parent
-root_dir = current_dir.parent
-sys.path.append(str(root_dir))
+# current_dir = Path(__file__).parent
+# root_dir = current_dir.parent
+# sys.path.append(str(root_dir))
+
 
 load_dotenv()
 
@@ -29,7 +31,7 @@ DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 class EnhancedChatMonitor:
     def __init__(self, log_file: str = "logs/chat/chat_logs.jsonl"):
         self.log_file = log_file
-        self.session_id = str(uuid.uuid4())
+        self.session_id = str(uuid6.uuid7())
 
     def log_interaction(
         self,
