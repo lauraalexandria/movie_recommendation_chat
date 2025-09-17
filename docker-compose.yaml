@@ -22,18 +22,25 @@ services:
       - rag-network
 
   # Estou testando os dockers separadamente (para rodar ele minha memória saiu de 40 GB para 23 GB - e se eu reiniciar?)
-  # Agora tenho que puxar do qdrant do container? (e continua rodando quando passo no terminal? DEU ERRO PARA PUXAR A FUNÇÃO DO VECTOR SEARCH, NÃO ACHA!)
+  # Agora tenho que puxar do qdrant do container? (e continua rodando quando passo no terminal? DEU ERRO PARA PUXAR A FUNÇÃO DO VECTOR SEARCH, NÃO ACHA! tive que mudar de novo kkk então deve achar)
   # Confirma como funciona isso do script do meu modelo está no container sozinho
   # trocar os scripts de forma que eles puxem do container, precisa em todos? até testes?
+
+  # Consegui rodar a api
+  # consigo rodar uma função que usa a api, porém no streamlit dá um erro que parece vir do qdrant
+  # vou ter que mudar a api para passar os retreived documents também
   # testar o docker do streamlit separado
   # colocar o app no docker-compose
-  # entender quanto um container pode ocupar de memória
+  # no script da api não tem configuração dos modelos...
+  # para testar: give me a animation recomendation that adults and children can enjoy it
 
   rag-api:
     build:
       context: .  # Contexto raiz do projeto
       dockerfile: api/Dockerfile  # Caminho para o Dockerfile
     container_name: rag-api
+    ports:
+      - "8000:8000"
     env_file:
       - .env  # Arquivo com variáveis de ambiente
     volumes:
