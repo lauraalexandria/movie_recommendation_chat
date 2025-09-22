@@ -22,35 +22,52 @@ services:
       - rag-network
 
   # Estou testando os dockers separadamente (para rodar ele minha memória saiu de 40 GB para 23 GB - e se eu reiniciar?)
-  # Agora tenho que puxar do qdrant do container? (e continua rodando quando passo no terminal? DEU ERRO PARA PUXAR A FUNÇÃO DO VECTOR SEARCH, NÃO ACHA! tive que mudar de novo kkk então deve achar)
   # Confirma como funciona isso do script do meu modelo está no container sozinho
   # trocar os scripts de forma que eles puxem do container, precisa em todos? até testes?
 
-  # Consegui rodar a api
-  # consigo rodar uma função que usa a api, porém no streamlit dá um erro que parece vir do qdrant
-  # vou ter que mudar a api para passar os retreived documents também
-  # testar o docker do streamlit separado
-  # colocar o app no docker-compose
-  # no script da api não tem configuração dos modelos...
-  # para testar: give me a animation recomendation that adults and children can enjoy it
+  # no script da api não tem configuração dos modelos...  nem no streamlit...
+  # ainda naõ estou usando as configuração dos enviroments que eu criei
+  # consigo rodar os comandos do makefile? pros testes só preciso da collection do qdrant
 
   rag-api:
     build:
-      context: .  # Contexto raiz do projeto
-      dockerfile: api/Dockerfile  # Caminho para o Dockerfile
+      context: .
+      dockerfile: api/Dockerfile
     container_name: rag-api
     ports:
       - "8000:8000"
     env_file:
-      - .env  # Arquivo com variáveis de ambiente
+      - .env
     volumes:
-      - ./src:/app/src #rag-engine/src:/app
+      - ./src:/app/src
       - ./logs:/app/logs
     environment:
       - QDRANT_HOST=qdrant
       - QDRANT_PORT=6333
     depends_on:
       - qdrant
+    networks:
+      - rag-network
+    restart: unless-stopped
+
+  chat-ui:
+    build:
+      context: .
+      dockerfile: ui/Dockerfile
+    container_name: chat-ui
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app/src
+      - ./logs:/app/logs
+    environment:
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+    depends_on:
+      - qdrant
+      - rag-api
     networks:
       - rag-network
     restart: unless-stopped

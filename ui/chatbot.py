@@ -1,24 +1,18 @@
 import datetime
 import json
 import os
-
-# import sys
-# from pathlib import Path
 from typing import Any, Dict, List
 
 import click
 import pandas as pd
+import requests
 import streamlit as st
 import uuid6
 from dotenv import load_dotenv
 
-# pylint: disable=relative-beyond-top-level
-from src.rag_engine import RAGEngine  # AINDA DÁ ERRO NO FLAKE!
-
 # current_dir = Path(__file__).parent
 # root_dir = current_dir.parent
 # sys.path.append(str(root_dir))
-
 
 load_dotenv()
 
@@ -32,6 +26,12 @@ class EnhancedChatMonitor:
     def __init__(self, log_file: str = "logs/chat/chat_logs.jsonl"):
         self.log_file = log_file
         self.session_id = str(uuid6.uuid7())
+
+    def ask_rag(self, query: str):
+        response = requests.post(
+            "http://rag-api:8000/rag/query", json={"query": query}
+        )
+        return response.json()["response"], response.json()["retrieved_docs"]
 
     def log_interaction(
         self,
@@ -205,16 +205,13 @@ def get_user_feedback():
     default="gpt-4o-mini",
     help="ChatGPT model name",
 )
-def main(collection_name, emb_model_name, top_k, gpt_model_name):
+def main():  # collection_name, emb_model_name, top_k, gpt_model_name
     # Page configuration
     st.set_page_config(page_title="Chat RAG", page_icon="🤖", layout="wide")
 
     # Engine RAG initialization
     initialize_session_state()
     monitor = EnhancedChatMonitor()
-    rag_engine = RAGEngine(
-        collection_name=collection_name, emb_model_name=emb_model_name
-    )
 
     # Title and description
     st.title("📽️🍿🎞️ Movie Recommendation Chat with RAG")
@@ -273,17 +270,11 @@ def main(collection_name, emb_model_name, top_k, gpt_model_name):
             st.markdown(prompt)
 
         # Processar com RAG
-        with st.spinner("🔍 Buscando informações..."):
+        with st.spinner("🔍 Thinking..."):
             start_time = datetime.datetime.now()
 
             # Generate response step
-            context = rag_engine.create_context(prompt, top_k=top_k)
-            retrieved_docs = rag_engine.retrieved_documents
-            response = rag_engine.generate_response(
-                query=prompt,
-                context=context,
-                gpt_model_name=gpt_model_name,
-            )
+            response, retrieved_docs = monitor.ask_rag(query=prompt)
 
             response_time = (
                 datetime.datetime.now() - start_time

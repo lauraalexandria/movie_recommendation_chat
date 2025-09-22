@@ -213,3 +213,4 @@ __marimo__/
 *.tsv
 *.db
 *.html
+qdrant_storage

@@ -23,7 +23,8 @@ class QueryRequest(BaseModel):
 @app.post("/rag/query")
 async def rag_query(request: QueryRequest):
     context = engine.create_context(request.query, request.top_k)
+    retrieved_docs = engine.retrieved_documents
     response = engine.generate_response(
         request.query, context, gpt_model_name="gpt-4o-mini"
     )
-    return {"response": response}
+    return {"response": response, "retrieved_docs": retrieved_docs}
