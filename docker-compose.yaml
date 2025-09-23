@@ -25,10 +25,6 @@ services:
   # Confirma como funciona isso do script do meu modelo está no container sozinho
   # trocar os scripts de forma que eles puxem do container, precisa em todos? até testes?
 
-  # no script da api não tem configuração dos modelos...  nem no streamlit...
-  # ainda naõ estou usando as configuração dos enviroments que eu criei
-  # consigo rodar os comandos do makefile? pros testes só preciso da collection do qdrant
-
   rag-api:
     build:
       context: .
@@ -43,7 +39,6 @@ services:
       - ./logs:/app/logs
     environment:
       - QDRANT_HOST=qdrant
-      - QDRANT_PORT=6333
     depends_on:
       - qdrant
     networks:
@@ -64,7 +59,7 @@ services:
       - ./logs:/app/logs
     environment:
       - QDRANT_HOST=qdrant
-      - QDRANT_PORT=6333
+      - RAG_API_HOST=rag-api
     depends_on:
       - qdrant
       - rag-api

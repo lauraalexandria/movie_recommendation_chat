@@ -24,6 +24,7 @@ logging.basicConfig(
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+QDRANT_HOST = os.getenv("QDRANT_HOST")
 client_openai = OpenAI()
 
 
@@ -34,7 +35,7 @@ class RAGEngine:
         emb_model_name: str = "BAAI/bge-small-en",
     ):
         self.vector_search = VectorSearch(
-            host="qdrant",
+            host=QDRANT_HOST,
             port=6333,
             collection_name=collection_name,
             emb_model_name=emb_model_name,

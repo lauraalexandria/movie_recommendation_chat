@@ -3,20 +3,16 @@ import json
 import os
 from typing import Any, Dict, List
 
-import click
 import pandas as pd
 import requests
 import streamlit as st
 import uuid6
 from dotenv import load_dotenv
 
-# current_dir = Path(__file__).parent
-# root_dir = current_dir.parent
-# sys.path.append(str(root_dir))
-
 load_dotenv()
 
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
+RAG_API_HOST = os.getenv("RAG_API_HOST")
 
 # pylint: disable=too-many-arguments, too-many-positional-arguments
 # pylint: disable=too-many-locals, too-many-statements, broad-exception-caught
@@ -29,7 +25,7 @@ class EnhancedChatMonitor:
 
     def ask_rag(self, query: str):
         response = requests.post(
-            "http://rag-api:8000/rag/query", json={"query": query}
+            f"http://{RAG_API_HOST}:8000/rag/query", json={"query": query}
         )
         return response.json()["response"], response.json()["retrieved_docs"]
 
@@ -184,28 +180,7 @@ def get_user_feedback():
     return bottom, feedback_comment
 
 
-@click.command()
-@click.option(
-    "--collection-name",
-    default="movies",
-    help="Name for qdrant collection",
-)
-@click.option(
-    "--emb-model-name",
-    default="BAAI/bge-small-en",
-    help="Embedding model name",
-)
-@click.option(
-    "--top-k",
-    default=10,
-    help="Number of movies to recommend",
-)
-@click.option(
-    "--gpt-model-name",
-    default="gpt-4o-mini",
-    help="ChatGPT model name",
-)
-def main():  # collection_name, emb_model_name, top_k, gpt_model_name
+def main():
     # Page configuration
     st.set_page_config(page_title="Chat RAG", page_icon="🤖", layout="wide")
 
