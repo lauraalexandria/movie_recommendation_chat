@@ -1,42 +1,54 @@
-# import requests
-
-# response = requests.get("https://api.themoviedb.org/3/movie/popular?api_key=SUA_CHAVE")
-# movies = response.json()["results"]
-
-import json
 import os
-from pathlib import Path
 
-# Create .kaggle directory
-kaggle_dir = Path.home() / ".kaggle"
-kaggle_dir.mkdir(exist_ok=True)
-
-# Create file kaggle.json
-with open(kaggle_dir / "kaggle.json", "w", encoding="utf-8") as f:
-    json.dump(
-        {
-            "username": os.getenv("KAGGLE_USERNAME"),
-            "key": os.getenv("KAGGLE_KEY"),
-        },
-        f,
-    )
-
-# Define segure permissions (Linux/Mac)
-if not os.name == "nt":
-    os.chmod(kaggle_dir / "kaggle.json", 0o600)
-
-# flake8: noqa: E402
+import pandas as pd
+import requests
 from dotenv import load_dotenv
-from kaggle.api.kaggle_api_extended import KaggleApi
 
-# Load .env variables
-load_dotenv(dotenv_path="../../.env")
+load_dotenv()
 
-# Authentication
-api = KaggleApi()
-api.authenticate()
+OMDB_API_KEY = os.getenv("OMDB_API_KEY")
+print(OMDB_API_KEY)
 
-# Load datasets
-api.dataset_download_files(
-    "jrobischon/wikipedia-movie-plots", path="./data/raw", unzip=True
-)
+PATH_SOURCE = "data/raw"
+boxd = pd.read_csv(f"{PATH_SOURCE}/ratings.csv")
+boxd = boxd[boxd["Rating"] >= 4]
+boxd["Name"] = boxd["Name"].str.lower().str.replace(" ", "_")
+
+
+def get_movie_by_imdb_id(imdb_id, year, api_key):
+    url_aux = f"?apikey={api_key}&t={imdb_id}&y={year}&plot=full"
+    url = f"http://www.omdbapi.com/{url_aux}"
+    response = requests.get(url)
+    return response.json()
+
+
+movies_data = {}
+for index, row in boxd.iterrows():
+    movie = get_movie_by_imdb_id(row["Name"], row["Year"], OMDB_API_KEY)
+    if "Title" in movie:
+        movies_data[index] = movie
+    else:
+        print(row["Name"])
+
+movies_data = pd.DataFrame(movies_data).transpose()
+movies_data = movies_data[
+    [
+        "Title",
+        "Year",
+        "Rated",
+        "Released",
+        "Runtime",
+        "Genre",
+        "Director",
+        "Writer",
+        "Actors",
+        "Plot",
+        "Language",
+        "Country",
+        "Awards",
+    ]
+]
+
+print(movies_data.shape)
+print(boxd.shape)
+movies_data.to_csv("data/raw/movie_plots.csv", index=False)

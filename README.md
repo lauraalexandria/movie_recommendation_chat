@@ -10,7 +10,11 @@ The project includes:
 * Conda - Virtual enviroment
 * Pylint - Static code analyser
 * pre-commit - pre-commit hooks
+* OMDb API
 * Qdrant - embedding?
+* OpenAI API
+* FastAPI
+* Streamlit
 
 ## Projet Struture
 
@@ -22,9 +26,6 @@ The project includes:
 * Conda
 * Docker
 * Qdrant
-* OpenAI API
-* FastAPI
-* Streamlit
 
 ### Setup project with Makefile
 
@@ -51,11 +52,10 @@ cp .env.example .env
 ```
 
 And change the default values to your needs:
-1. The Kaggle credentials can be view in "Settings" > Down until "API" > "Create New API Token" and the file kaggle.json will be downloaded with the credentials;
+1. The Kaggle credentials can be view in "Settings" > Down until "API" > "Create New API Token" and the file kaggle.json will be downloaded with the credentials; TROCAR POR OMDB CREDENTIALS
 1. The OpenAI credentials can be view in https://platform.openai.com/, after create an account, search for "API Keys";
 
 ### Build Dockers
-
 
 
 Ou seja, tenho que adicionar no docker
@@ -78,6 +78,15 @@ docker-compose down -v; docker-compose build; docker-compose up -d
 | Grafana         | http://localhost:3000      | admin/admin                                          |
 | FastAPI         | http://localhost:8000/docs | -                                                    |
 | Chat            | http://localhost:8501      | -                                                    |
+
+
+### Data Extration (Optional)
+
+As recomendações foram baseadas em minhas avaliação no letterboxd, você quiser também replicar com suas avaliaçãospo baixar os dados no site da letterboxd e trocar o arquivo data/raw/ratings.csv pelo seu próprio
+
+```
+make extract-data
+```
 
 ### Model
 
@@ -184,8 +193,5 @@ conda deactivate
 
 ## To-do list (next improvements)
 
-* no Retrieval evaluation eu deveria comparar diferentes modelos?
-* Como gerar os dados de base de comparação???
-* se eu passar uma solicitação do tipo quero um filme igual a esse, acho que não vai dar certo...
 * [ ] Bring more movies from Wiki - e os plots da wikipedia são bem grandes, né?
 * [ ] Add ratings.csv and generate data to repo? and my logged tests?
