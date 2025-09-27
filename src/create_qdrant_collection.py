@@ -52,13 +52,14 @@ def create_collection(
     )
 
     logging.info("Reading datasets")
-    wiki = pd.read_csv(f"{path_source}/wiki_movie_plots_deduped.csv")
-    boxd = pd.read_csv(f"{path_source}/ratings.csv")
-    boxd = boxd[boxd["Rating"] >= 4]
-    boxd = boxd.drop(["Date", "Letterboxd URI", "Rating"], axis=1)
-    boxd = boxd.rename({"Name": "Title", "Year": "Release Year"}, axis=1)
+    # wiki = pd.read_csv(f"{path_source}/wiki_movie_plots_deduped.csv")
+    # boxd = pd.read_csv(f"{path_source}/ratings.csv")
+    # boxd = boxd[boxd["Rating"] >= 4]
+    # boxd = boxd.drop(["Date", "Letterboxd URI", "Rating"], axis=1)
+    # boxd = boxd.rename({"Name": "Title", "Year": "Release Year"}, axis=1)
 
-    df = wiki.merge(boxd, on=["Title", "Release Year"])
+    # df = wiki.merge(boxd, on=["Title", "Release Year"])
+    df = pd.read_csv(f"{path_source}/movie_plots.csv")
 
     embedding_model = TextEmbedding(model_name=model_name)
 
@@ -77,13 +78,12 @@ def create_collection(
                     "vector": embedding,
                     "payload": {
                         "title": row["Title"],
-                        "year": row["Release Year"],
-                        "origin": row["Origin/Ethnicity"],
+                        "year": row["Year"],
+                        "origin": row["Country"],
                         "director": row["Director"],
-                        "cast": row["Cast"],
+                        "cast": row["Actors"],
                         "genres": row["Genre"],
                         "plot": row["Plot"],
-                        # "score": row["corr"]
                     },
                 }
             ],

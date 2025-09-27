@@ -35,13 +35,14 @@ def generate_evaluation_data(
 ):
 
     logging.info("Reading datasets")
-    wiki = pd.read_csv(f"{path_source}/raw/wiki_movie_plots_deduped.csv")
-    boxd = pd.read_csv(f"{path_source}/raw/ratings.csv")
-    boxd = boxd[boxd["Rating"] >= 4]
-    boxd = boxd.drop(["Date", "Letterboxd URI", "Rating"], axis=1)
-    boxd = boxd.rename({"Name": "Title", "Year": "Release Year"}, axis=1)
+    # wiki = pd.read_csv(f"{path_source}/wiki_movie_plots_deduped.csv")
+    # boxd = pd.read_csv(f"{path_source}/ratings.csv")
+    # boxd = boxd[boxd["Rating"] >= 4]
+    # boxd = boxd.drop(["Date", "Letterboxd URI", "Rating"], axis=1)
+    # boxd = boxd.rename({"Name": "Title", "Year": "Release Year"}, axis=1)
 
-    documents = wiki.merge(boxd, on=["Title", "Release Year"])
+    # df = wiki.merge(boxd, on=["Title", "Release Year"])
+    documents = pd.read_csv(f"{path_source}/movie_plots.csv")
 
     # ACHAVA QUE PRECISAVA, MAS NÃO!
     # The record should contain the answer to the solicitations.
@@ -73,7 +74,7 @@ def generate_evaluation_data(
     results = {}
     for doc in tqdm(documents):
 
-        doc_id = f"{doc["Title"]} - {doc["Release Year"]}"
+        doc_id = f"{doc["Title"]} - {doc["Year"]}"
         prompt = prompt_template.format(**doc)
         questions_raw = client_openai.chat.completions.create(
             model=gpt_model_name,
