@@ -6,15 +6,9 @@ from openai import OpenAI
 
 from .vector_search import VectorSearch
 
-# ✅ Use variável de ambiente para o log path
-LOG_DIR = os.getenv(
-    "LOG_DIR", "logs/system"
-)  # Default para 'logs' se não definido
+LOG_DIR = os.getenv("LOG_DIR", "logs/system")
 
-# Garante que o diretório existe
-# Path(LOG_DIR).mkdir(exist_ok=True)
-
-# pylint: disable=duplicate-code
+# pylint: disable=duplicate-code, broad-exception-caught)
 logging.basicConfig(
     level=logging.INFO,
     filename=os.path.join(LOG_DIR, "app.log"),
@@ -44,14 +38,20 @@ class RAGEngine:
 
     def create_context(self, query: str, top_k: int = 10) -> str:
         """Create context from vector search"""
-        self.retrieved_documents = self.vector_search.search(
-            query, top_k=top_k
-        )
+
+        try:
+            self.retrieved_documents = self.vector_search.hybrid_search(
+                query, top_k=top_k
+            )
+        except Exception:
+            self.retrieved_documents = self.vector_search.search(
+                query, top_k=top_k
+            )
 
         context = ""
         for movie in self.retrieved_documents:
-            context += f"Title: {movie["title"]}:\n"
-            context += f"Director: {movie["director"]}\n"
+            context += f"Title: {movie["title"].title()}:\n"
+            context += f"Director: {movie["director"].title()}\n"
             context += f"Plot: {movie["plot"]}\n\n"
 
         return context

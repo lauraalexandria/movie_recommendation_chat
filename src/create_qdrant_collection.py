@@ -66,9 +66,10 @@ def create_collection(
     logging.info("Embedding select movies information")
     for _, row in df.iterrows():
 
-        text = (
-            f"{row['Title']} {row['Genre']} {row['Director']} {row['Plot']}"
-        )
+        text = f"""
+        {row['Title']} {row['Genre_0']} {row['Genre_1']} {row['Genre_2']}
+        {row['Director']} {row['Plot']}
+        """
         embedding = list(embedding_model.embed([text]))[0].tolist()
         client_qdrant.upsert(
             collection_name=collection_name,
@@ -82,7 +83,9 @@ def create_collection(
                         "origin": row["Country"],
                         "director": row["Director"],
                         "cast": row["Actors"],
-                        "genres": row["Genre"],
+                        "genres": row["Genre_0"],
+                        "genres_sec": row["Genre_1"],
+                        "genres_ter": row["Genre_2"],
                         "plot": row["Plot"],
                     },
                 }

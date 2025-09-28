@@ -9,7 +9,7 @@ COLLECTION_NAME = movies
 EMBEDDING_DIMENSIONALITY = 384
 MODEL_NAME = BAAI/bge-small-en
 TOP_K = 10
-QUERY = "i want to watch a movie similar to submarine"#  "why is submarine a good movie?" # "a non-american romantic movie"
+QUERY = "why is submarine a good movie?" # "tell me a non-american comedy movie" # "i want to watch a movie similar to submarine"
 N_TESTS = 3
 GPT_MODEL_NAME = "gpt-4o-mini"
 

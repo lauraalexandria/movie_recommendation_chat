@@ -1,10 +1,11 @@
 import logging
 import os
+import re
 from typing import Dict, List
 
 from dotenv import load_dotenv
 from fastembed import TextEmbedding
-from qdrant_client import QdrantClient
+from qdrant_client import QdrantClient, models
 
 # pylint: disable=duplicate-code
 logging.basicConfig(
@@ -46,11 +47,6 @@ class VectorSearch:
             limit=top_k,
         )
 
-        # print([hit.score for hit in search_results.points])
-        # score = getattr(search_results.points, 'score', 0.0)
-        # final_dict = [hit.payload for hit in search_results.points]
-        # final_dict["score"] = score
-
         final_dicts = []
         for hit in search_results.points:
             aux_dict = hit.payload
@@ -59,16 +55,61 @@ class VectorSearch:
 
         return final_dicts
 
-    # def hybrid_search(self, query: str, top_k: int = 5,
-    #  filters: Dict = None) -> List[Dict]:
-    #     """Hybrid search"""
-    #     query_embedding = self.get_embedding(query)
+    def extract_genres(self, query):
+        genres_list = [
+            "action",
+            "adventure",
+            "animation",
+            "comedy",
+            "crime",
+            "documentary",
+            "drama",
+            "fantasy",
+            "horror",
+            "mystery",
+            "romance",
+            "science fiction",
+            "thriller",
+            "western",
+            "biography",
+            "family",
+            "history",
+            "music",
+            "musical",
+            "war",
+            "sport",
+            "superhero",
+            "noir",
+            "rom-com",
+            "romantic",
+        ]
 
-    #     search_results = self.client.query_points(
-    #         collection_name=self.collection_name,
-    #         query=query_embedding,
-    #         limit=top_k,
-    #         query_filter=filters
-    #     )
+        found_genres = []
+        query_lower = query.lower()
 
-    #     return [hit.payload for hit in search_results.points]
+        for genre in genres_list:
+            if re.search(r"\b" + re.escape(genre) + r"\b", query_lower):
+                found_genres.append(genre)
+
+        return found_genres
+
+    def hybrid_search(self, query: str, top_k: int = 5) -> List[Dict]:
+        """Hybrid search"""
+        query_embedding = self.get_embedding(query)
+        genres = self.extract_genres(query)
+
+        search_results = self.client.query_points(
+            collection_name=self.collection_name,
+            query=query_embedding,
+            limit=top_k,
+            query_filter=models.Filter(
+                must=[
+                    models.FieldCondition(
+                        key="genres",
+                        match=models.MatchValue(value=genres[0]),  # .title)
+                    )
+                ]
+            ),
+        )
+
+        return [hit.payload for hit in search_results.points]

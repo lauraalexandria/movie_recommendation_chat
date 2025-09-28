@@ -88,13 +88,19 @@ As recomendações foram baseadas em minhas avaliação no letterboxd, você qui
 make extract-data
 ```
 
+### Create Qdrant Collection
+
+```
+make create-qdrant-collection
+```
+
 ### Model
 
 This single make command includes:
 
 1. explain model
 
-(?) EXPLAIN METRICS? Example in validation!
+(?) EXPLAIN METRICS? Example in validation! nesse caso não tem tantas etapas quanto o outro projeto...
 
 ```
 make -f Makefile all-model-steps

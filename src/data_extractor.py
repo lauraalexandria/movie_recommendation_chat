@@ -84,6 +84,21 @@ movies_data = movies_data[
         "Awards",
     ]
 ]
+movies_data[movies_data.select_dtypes(include=["object"]).columns] = (
+    movies_data.select_dtypes(include=["object"]).apply(
+        lambda x: x.str.lower()
+    )
+)
+movies_data = pd.concat(
+    [
+        movies_data,
+        movies_data["Genre"]
+        .str.split(", ", expand=True)
+        .add_prefix("Genre_"),
+    ],
+    axis=1,
+)
+movies_data = movies_data.drop("Genre", axis=1)
 
 print(movies_data.shape)
 print(boxd.shape)
