@@ -33,8 +33,12 @@ create-qdrant-collection:
 	$(PYTHON) src/create_qdrant_collection.py --collection-name $(COLLECTION_NAME) --embedding-dimensionality $(EMBEDDING_DIMENSIONALITY) --model-name $(MODEL_NAME) --path-source $(RAW_DATA)
 
 ## Data Preparation
+generate-evaluation-data-simulation: # $(RAW_DATA)
+	$(PYTHON) -m evaluation.generate_evaluation_data --path-source $(DATA_DIR) --n-tests $(N_TESTS) --gpt-model-name $(GPT_MODEL_NAME) --flag-simulate-cost True
+
+## Data Preparation
 generate-evaluation-data: # $(RAW_DATA)
-	$(PYTHON) -m evaluation.generate_evaluation_data --path-source $(DATA_DIR) --n-tests $(N_TESTS) --gpt-model-name $(GPT_MODEL_NAME)
+	$(PYTHON) -m evaluation.generate_evaluation_data --path-source $(DATA_DIR) --n-tests $(N_TESTS) --gpt-model-name $(GPT_MODEL_NAME) --flag-simulate-cost False
 
 
 ## Retrieval Evaluation

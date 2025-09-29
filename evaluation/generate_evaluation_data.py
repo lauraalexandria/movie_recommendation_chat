@@ -8,16 +8,19 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from tqdm import tqdm
 
+from .simulate_cost import CostSimulation
+
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client_openai = OpenAI()
 
 
+# pylint: disable=too-many-locals
 @click.command()
 @click.option(
     "--path-source",
-    default=".data",
+    default=".data/raw",
     help="Path for datasets",
 )
 @click.option(
@@ -30,23 +33,20 @@ client_openai = OpenAI()
     default="gpt-4o-mini",
     help="ChatGPT model name",
 )
+@click.option(
+    "--flag-simulate-cost",
+    default=False,
+    help="Flag to print simulated cost",
+)
 def generate_evaluation_data(
-    path_source: str, n_tests: int, gpt_model_name: str
+    path_source: str,
+    n_tests: int,
+    gpt_model_name: str,
+    flag_simulate_cost: bool,
 ):
 
     logging.info("Reading datasets")
-    # wiki = pd.read_csv(f"{path_source}/wiki_movie_plots_deduped.csv")
-    # boxd = pd.read_csv(f"{path_source}/ratings.csv")
-    # boxd = boxd[boxd["Rating"] >= 4]
-    # boxd = boxd.drop(["Date", "Letterboxd URI", "Rating"], axis=1)
-    # boxd = boxd.rename({"Name": "Title", "Year": "Release Year"}, axis=1)
-
-    # df = wiki.merge(boxd, on=["Title", "Release Year"])
-    documents = pd.read_csv(f"{path_source}/movie_plots.csv")
-
-    # ACHAVA QUE PRECISAVA, MAS NÃO!
-    # The record should contain the answer to the solicitations.
-    # Create the awswers based in the context below.
+    documents = pd.read_csv(f"{path_source}/raw/movie_plots.csv")
 
     json_format = (
         '{{"solicitations": ["solicitation", "...", "solicitation"]}}'
@@ -54,9 +54,9 @@ def generate_evaluation_data(
     prompt_template = f"""
     You emulate a user that wants to find new movies.
     Formulate {n_tests} short solicitations this user might ask that the answer
-    would be the movie in the context below.
-    Make the solicitations in order to explore curiosity about genres, the
-    plot and the director.
+    would be only the movie name in the context below.
+    Make the movie solicitations in order to explore curiosity about genres,
+    the plot and the director.
     Include factual solicitations and others that demand inference.
     Do not include the title of the movie in the solicitation.
 
@@ -64,41 +64,59 @@ def generate_evaluation_data(
 
     Title: {{Title}}
     Director: {{Director}}
+    Country: {{Country}}
     Plot: {{Plot}}
 
-    Retorn in JSON format:
+    Return in the exact JSON format, with double quotes:
     {json_format}
     """
 
     documents = documents.to_dict(orient="records")
     results = {}
-    for doc in tqdm(documents):
 
-        doc_id = f"{doc["Title"]} - {doc["Year"]}"
-        prompt = prompt_template.format(**doc)
-        questions_raw = client_openai.chat.completions.create(
-            model=gpt_model_name,
-            messages=[{"role": "user", "content": prompt}],
+    if flag_simulate_cost:
+
+        simulate_cost = CostSimulation(gpt_model_name=gpt_model_name)
+
+        prompt_list = []
+        for doc in tqdm(documents):
+
+            prompt_list = prompt_list + [prompt_template.format(**doc)]
+        print(
+            "This evaluation data generation will cost approximately $",
+            simulate_cost.simulate_cost(prompt_list),
         )
-        questions_raw = questions_raw.choices[0].message.content
-        questions = json.loads(questions_raw)
-        results[doc_id] = questions["solicitations"]
 
-    df_results = (
-        pd.DataFrame.from_dict(results, orient="index")
-        .stack()
-        .reset_index()
-        .drop(columns="level_1")
-        .rename(columns={"level_0": "movie", 0: "solicitations"})
-    )
+    else:
+        for doc in tqdm(documents):
 
-    df_results.to_csv(
-        f"{path_source}/processed/ground-truth-retrieval.csv", index=False
-    )
+            doc_id = f"{doc["Title"]} - {doc["Year"]}"
+            prompt = prompt_template.format(**doc)
+            question = client_openai.chat.completions.create(
+                model=gpt_model_name,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            question = question.choices[0].message.content
+            print(question)
+            if "```" in question:
+                question = question.replace("```", "").replace("json", "")
+            questions = json.loads(question)
+            results[doc_id] = questions["solicitations"]
+
+        df_results = (
+            pd.DataFrame.from_dict(results, orient="index")
+            .stack()
+            .reset_index()
+            .drop(columns="level_1")
+            .rename(columns={"level_0": "movie", 0: "solicitations"})
+        )
+
+        path_source = f"{path_source}/processed"
+        df_results.to_csv(
+            f"{path_source}/ground-truth-retrieval-{gpt_model_name}.csv",
+            index=False,
+        )
 
 
 if __name__ == "__main__":
     generate_evaluation_data()
-
-    # depois de gerar os dados melhor eu confirmar se algum registro
-    # da coluna solicitations possui a string solicitation
