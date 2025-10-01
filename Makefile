@@ -8,7 +8,7 @@ EVAL_DATA = $(DATA_DIR)/processed/ground-truth-retrieval.csv
 COLLECTION_NAME = movies
 EMBEDDING_DIMENSIONALITY = 384
 MODEL_NAME = BAAI/bge-small-en
-TOP_K = 10
+TOP_K = 15
 QUERY = "why is submarine a good movie?" # "tell me a non-american comedy movie" # "i want to watch a movie similar to submarine"
 N_TESTS = 3
 GPT_MODEL_NAME = "gpt-4o-mini"
@@ -45,9 +45,13 @@ generate-evaluation-data: # $(RAW_DATA)
 retrieval_eval:
 	$(PYTHON) -m evaluation.retrieval_eval --ground-truth-path $(EVAL_DATA) --emb-model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K)
 
+## Simulation RAG Evaluation
+rag_eval_simulation:
+	$(PYTHON) -m evaluation.rag_eval --ground-truth-path $(EVAL_DATA) --emb-model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K) --gpt-model-name $(GPT_MODEL_NAME) --flag-simulate-cost True
+
 ## RAG Evaluation
 rag_eval:
-	$(PYTHON) -m evaluation.rag_eval --ground-truth-path $(EVAL_DATA) --emb-model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K) --gpt-model-name $(GPT_MODEL_NAME)
+	$(PYTHON) -m evaluation.rag_eval --ground-truth-path $(EVAL_DATA) --emb-model-name $(MODEL_NAME) --collection-name $(COLLECTION_NAME) --top-k $(TOP_K) --gpt-model-name $(GPT_MODEL_NAME) --flag-simulate-cost False
 
 ## Rag
 rag:

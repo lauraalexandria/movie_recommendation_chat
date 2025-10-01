@@ -50,8 +50,9 @@ class RAGEngine:
 
         context = ""
         for movie in self.retrieved_documents:
+            print(movie)
             context += f"Title: {movie["title"].title()}:\n"
-            context += f"Director: {movie["director"].title()}\n"
+            context += f"Director: {movie["director"]}\n"
             context += f"Plot: {movie["plot"]}\n\n"
 
         return context

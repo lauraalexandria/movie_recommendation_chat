@@ -67,7 +67,7 @@ def generate_evaluation_data(
     Country: {{Country}}
     Plot: {{Plot}}
 
-    Return in the exact JSON format, with double quotes:
+    Return in the exact JSON format, with double quotes for each sentence:
     {json_format}
     """
 

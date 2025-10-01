@@ -4,21 +4,21 @@ import os
 import click
 import pandas as pd
 from dotenv import load_dotenv
-
-# from qdrant_client import QdrantClient
 from tqdm import tqdm
-from utils.vector_search import VectorSearch
 
-# pylint: disable=duplicate-code
+from src.vector_search import VectorSearch
+
 logging.basicConfig(
     level=logging.INFO,
-    filename=os.path.join("logs/system", "app.log"),
+    filename=os.path.join("logs/system", "retrieval_eval.log"),
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
 load_dotenv()
+QDRANT_HOST = os.getenv("QDRANT_HOST")
 
 
+# pylint: disable=too-many-locals, broad-exception-caught
 def hit_rate(relevance_total):
     cnt = 0
 
@@ -69,34 +69,72 @@ def evaluate(ground_truth_path, collection_name, emb_model_name, top_k):
     ground_truth_data = ground_truth_data.to_dict(orient="records")
 
     vector_search = VectorSearch(
-        host="qdrant",
+        host=QDRANT_HOST,
         port=6333,
         collection_name=collection_name,
         emb_model_name=emb_model_name,
     )
-    relevance_test_total = []
+    search_relevance = []
+    hybrid_relevance = []
 
     logging.info("Evaluating questions")
     for q in tqdm(ground_truth_data):
         doc_id = q["movie"]
 
-        vector_recommendations = vector_search.search(
+        search_recommendations = vector_search.search(
             q["solicitations"], top_k=top_k
         )
 
-        answer = []
-        for movie in vector_recommendations:
-            answer = answer + [f"{movie["title"]} - {movie["year"]}"]
+        search_answer = []
+        for movie in search_recommendations:
+            search_answer = search_answer + [
+                f"{movie["title"]} - {movie["year"]}"
+            ]
 
-        relevance_test = [m == doc_id for m in answer]
-        relevance_test_total.append(relevance_test)
+        relevance_aux = [m == doc_id for m in search_answer]
+        search_relevance.append(relevance_aux)
 
-    logging.info("HitRate: %s", hit_rate(relevance_test_total))
-    logging.info("MRR: %s", mrr(relevance_test_total))
+        hybrid_search_fail = 0
+        try:
+            hybrid_recommendations = vector_search.hybrid_search(
+                q["solicitations"], top_k=top_k
+            )
+
+            hybrid_answer = []
+            for movie in hybrid_recommendations:
+                hybrid_answer = hybrid_answer + [
+                    f"{movie["title"]} - {movie["year"]}"
+                ]
+
+            relevance_aux = [m == doc_id for m in hybrid_answer]
+            hybrid_relevance.append(relevance_aux)
+        except Exception:
+            hybrid_search_fail += 1
+
+    logging.info("Embedding Model: %s K: %s", emb_model_name, top_k)
+    logging.info("Vector Search HitRate: %s", hit_rate(search_relevance))
+    logging.info("Vector Search MRR: %s", mrr(search_relevance))
+
+    logging.info("Hybrid Search HitRate: %s", hit_rate(hybrid_relevance))
+    logging.info("Hybrid Search MRR: %s", mrr(hybrid_relevance))
+    logging.info("Hybrid Search Fails: %s", hybrid_search_fail)
+
+    print(
+        "search_hit_rate",
+        hit_rate(search_relevance),
+        "search_MRR",
+        mrr(search_relevance),
+        "hybrid_hit_rate",
+        hit_rate(hybrid_relevance),
+        "hybrid_MRR",
+        mrr(hybrid_relevance),
+    )
 
     return {
-        "hit_rate": hit_rate(relevance_test_total),
-        "MRR": mrr(relevance_test_total),
+        "search_hit_rate": hit_rate(search_relevance),
+        "search_MRR": mrr(search_relevance),
+        "hybrid_hit_rate": hit_rate(hybrid_relevance),
+        "hybrid_MRR": mrr(hybrid_relevance),
     }
 
 

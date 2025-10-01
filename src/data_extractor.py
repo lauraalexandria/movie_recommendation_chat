@@ -99,6 +99,9 @@ movies_data = pd.concat(
     axis=1,
 )
 movies_data = movies_data.drop("Genre", axis=1)
+movies_data["Director"] = movies_data["Director"].replace(
+    "n/a", "no director"
+)
 
 print(movies_data.shape)
 print(boxd.shape)

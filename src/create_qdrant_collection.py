@@ -66,6 +66,7 @@ def create_collection(
     logging.info("Embedding select movies information")
     for _, row in df.iterrows():
 
+        print(row["Director"])
         text = f"""
         {row['Title']} {row['Genre_0']} {row['Genre_1']} {row['Genre_2']}
         {row['Director']} {row['Plot']}
