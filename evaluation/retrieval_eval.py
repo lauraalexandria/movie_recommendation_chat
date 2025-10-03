@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 
@@ -7,12 +8,6 @@ from dotenv import load_dotenv
 from tqdm import tqdm
 
 from src.vector_search import VectorSearch
-
-logging.basicConfig(
-    level=logging.INFO,
-    filename=os.path.join("logs/system", "retrieval_eval.log"),
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
 
 load_dotenv()
 QDRANT_HOST = os.getenv("QDRANT_HOST")
@@ -111,31 +106,21 @@ def evaluate(ground_truth_path, collection_name, emb_model_name, top_k):
         except Exception:
             hybrid_search_fail += 1
 
-    logging.info("Embedding Model: %s K: %s", emb_model_name, top_k)
-    logging.info("Vector Search HitRate: %s", hit_rate(search_relevance))
-    logging.info("Vector Search MRR: %s", mrr(search_relevance))
-
-    logging.info("Hybrid Search HitRate: %s", hit_rate(hybrid_relevance))
-    logging.info("Hybrid Search MRR: %s", mrr(hybrid_relevance))
-    logging.info("Hybrid Search Fails: %s", hybrid_search_fail)
-
-    print(
-        "search_hit_rate",
-        hit_rate(search_relevance),
-        "search_MRR",
-        mrr(search_relevance),
-        "hybrid_hit_rate",
-        hit_rate(hybrid_relevance),
-        "hybrid_MRR",
-        mrr(hybrid_relevance),
-    )
-
-    return {
-        "search_hit_rate": hit_rate(search_relevance),
-        "search_MRR": mrr(search_relevance),
-        "hybrid_hit_rate": hit_rate(hybrid_relevance),
-        "hybrid_MRR": mrr(hybrid_relevance),
+    log_entry = {
+        "Type": "Retrieval Evaluation",
+        "Embedding Model": emb_model_name,
+        "K": top_k,
+        "Vector Search HitRate": hit_rate(search_relevance),
+        "Vector Search MRR": mrr(search_relevance),
+        "Hybrid Search HitRate": hit_rate(hybrid_relevance),
+        "Hybrid Search MRR": mrr(hybrid_relevance),
+        "Hybrid Search Fails": hybrid_search_fail,
     }
+
+    print(log_entry)
+
+    with open("logs/system/eval.log", "a", encoding="utf-8") as f:
+        f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
 
 
 if __name__ == "__main__":

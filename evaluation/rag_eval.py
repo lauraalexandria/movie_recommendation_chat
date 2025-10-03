@@ -15,11 +15,14 @@ from .simulate_cost import CostSimulation
 
 # pylint: disable=too-many-arguments, too-many-positional-arguments,
 # pylint: disable=too-many-locals
-logging.basicConfig(
-    level=logging.INFO,
-    filename=os.path.join("logs/system", "rag_eval.log"),
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
+# logging.basicConfig(
+#     level=logging.INFO,
+#     filename=os.path.join("logs/system", "eval.log"),
+#     format="%(asctime)s - %(levelname)s - %(message)s",
+# )
+
+logger_eval = logging.getLogger("eval")
+logger_eval.addHandler(logging.FileHandler("logs/system/eval.log"))
 
 load_dotenv()
 
@@ -142,7 +145,7 @@ def evaluate_rag(
             ]
         print(
             "This evaluation data generation will cost approximately $",
-            simulate_cost.simulate_cost(prompt_list),
+            simulate_cost.simulate_cost(prompt_list) * 2,
         )
 
     else:
@@ -152,42 +155,66 @@ def evaluate_rag(
             solicitation = q["solicitations"]
             # print(solicitation)
             context = engine.create_context(solicitation, top_k)
-            response = engine.generate_response(
+            rag_response = engine.generate_response(
                 solicitation, context, gpt_model_name=gpt_model_name
             )
 
-            evaluation = evaluation_category(
+            messages = [
+                {"role": "system", "content": "You are a helpful cinephile"}
+            ]
+            chat_response = client_openai.chat.completions.create(
+                model=gpt_model_name, messages=messages
+            )
+
+            rag_evaluation = evaluation_category(
                 evaluate_template=EVALUATE_TEMPLATE,
                 solicitation=solicitation,
-                answer=response,
+                answer=rag_response,
                 gpt_model_name=gpt_model_name,
             )
-            evaluation = json.loads(evaluation)
+            evaluation = json.loads(rag_evaluation)
+            evaluations.append((q, rag_response, evaluation, "rag"))
 
-            evaluations.append((q, response, evaluation))
+            chat_evaluation = evaluation_category(
+                evaluate_template=EVALUATE_TEMPLATE,
+                solicitation=solicitation,
+                answer=chat_response,
+                gpt_model_name=gpt_model_name,
+            )
+            evaluation = json.loads(chat_evaluation)
+            evaluations.append((q, chat_response, evaluation, "chat"))
 
-        df_eval_mini = pd.DataFrame(
-            evaluations, columns=["record", "answer", "evaluation"]
+        df_eval = pd.DataFrame(
+            evaluations, columns=["record", "answer", "evaluation", "origin"]
         )
 
-        df_eval_mini["movie"] = df_eval_mini.record.apply(
-            lambda d: d["movie"]
-        )
-        df_eval_mini["solicitation"] = df_eval_mini.record.apply(
+        df_eval["movie"] = df_eval.record.apply(lambda d: d["movie"])
+        df_eval["solicitation"] = df_eval.record.apply(
             lambda d: d["solicitations"]
         )
 
-        df_eval_mini["relevance"] = df_eval_mini.evaluation.apply(
+        df_eval["relevance"] = df_eval.evaluation.apply(
             lambda d: d["Relevance"]
         )
-        df_eval_mini["explanation"] = df_eval_mini.evaluation.apply(
+        df_eval["explanation"] = df_eval.evaluation.apply(
             lambda d: d["Explanation"]
         )
 
-        del df_eval_mini["record"]
-        del df_eval_mini["evaluation"]
+        del df_eval["record"]
+        del df_eval["evaluation"]
+        df_eval.to_csv(
+            "data/processed/df_eval.csv",
+            index=False,
+        )
 
-        logging.info(df_eval_mini.relevance.value_counts(normalize=True))
+        log_entry = (
+            pd.crosstab(df_eval["relevance"], df_eval["origin"], dropna=False)
+            / df_solicitation.shape[0]
+        ).to_dict()
+        print(log_entry)
+
+        with open("logs/system/eval.log", "a", encoding="utf-8") as f:
+            f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
 
 
 if __name__ == "__main__":

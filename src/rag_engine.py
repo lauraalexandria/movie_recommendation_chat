@@ -39,18 +39,17 @@ class RAGEngine:
     def create_context(self, query: str, top_k: int = 10) -> str:
         """Create context from vector search"""
 
-        try:
-            self.retrieved_documents = self.vector_search.hybrid_search(
-                query, top_k=top_k
-            )
-        except Exception:
-            self.retrieved_documents = self.vector_search.search(
-                query, top_k=top_k
-            )
+        # try:
+        #     self.retrieved_documents = self.vector_search.hybrid_search(
+        #         query, top_k=top_k
+        #     )
+        # except Exception:
+        self.retrieved_documents = self.vector_search.search(
+            query, top_k=top_k
+        )
 
         context = ""
         for movie in self.retrieved_documents:
-            print(movie)
             context += f"Title: {movie["title"].title()}:\n"
             context += f"Director: {movie["director"]}\n"
             context += f"Plot: {movie["plot"]}\n\n"
