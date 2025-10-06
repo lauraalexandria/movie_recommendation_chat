@@ -106,7 +106,7 @@ class VectorSearch:
                 must=[
                     models.FieldCondition(
                         key="genres",
-                        match=models.MatchValue(value=genres[0]),  # .title)
+                        match=models.MatchValue(value=genres[0]),
                     )
                 ]
             ),

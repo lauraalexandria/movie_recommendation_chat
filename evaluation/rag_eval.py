@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 
 import click
@@ -13,16 +12,8 @@ from src.rag_engine import RAGEngine
 
 from .simulate_cost import CostSimulation
 
-# pylint: disable=too-many-arguments, too-many-positional-arguments,
-# pylint: disable=too-many-locals
-# logging.basicConfig(
-#     level=logging.INFO,
-#     filename=os.path.join("logs/system", "eval.log"),
-#     format="%(asctime)s - %(levelname)s - %(message)s",
-# )
-
-logger_eval = logging.getLogger("eval")
-logger_eval.addHandler(logging.FileHandler("logs/system/eval.log"))
+# pylint: disable=too-many-arguments, too-many-positional-arguments
+# pylint: disable=too-many-locals, too-many-statements
 
 load_dotenv()
 
@@ -64,19 +55,12 @@ def evaluation_category(
     )
 
     answer_message = [
-        # {
-        #    "role": "system",
-        #     "content": "You are a helpful cinephile"
-        #     "Answer the questions using only the provided context."
-        #     "Do not use any outside knowledge.",
-        # },
         {"role": "user", "content": prompt},
     ]
 
     answer = client_openai.chat.completions.create(
         model=gpt_model_name, messages=answer_message
     )
-    # CONSIGUERIA COLOCAR TODAS OS PROMPTS DE UMA VEZ?
 
     answer = answer.choices[0].message.content.strip()
 
@@ -153,17 +137,28 @@ def evaluate_rag(
         evaluations = []
         for q in tqdm(ground_truth):
             solicitation = q["solicitations"]
-            # print(solicitation)
             context = engine.create_context(solicitation, top_k)
             rag_response = engine.generate_response(
                 solicitation, context, gpt_model_name=gpt_model_name
             )
 
             messages = [
-                {"role": "system", "content": "You are a helpful cinephile"}
+                {
+                    "role": "system",
+                    "content": "You are a helpful cinephile"
+                    "Answer the questions with movies recommendations",
+                },
+                {
+                    "role": "user",
+                    "content": solicitation,
+                },
             ]
-            chat_response = client_openai.chat.completions.create(
-                model=gpt_model_name, messages=messages
+            chat_response = (
+                client_openai.chat.completions.create(
+                    model=gpt_model_name, messages=messages
+                )
+                .choices[0]
+                .message.content.strip()
             )
 
             rag_evaluation = evaluation_category(

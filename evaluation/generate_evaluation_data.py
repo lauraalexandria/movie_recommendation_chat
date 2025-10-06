@@ -113,7 +113,7 @@ def generate_evaluation_data(
 
         path_source = f"{path_source}/processed"
         df_results.to_csv(
-            f"{path_source}/ground-truth-retrieval-{gpt_model_name}.csv",
+            f"{path_source}/ground-truth-retrieval.csv",
             index=False,
         )
 

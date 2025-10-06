@@ -39,11 +39,6 @@ class RAGEngine:
     def create_context(self, query: str, top_k: int = 10) -> str:
         """Create context from vector search"""
 
-        # try:
-        #     self.retrieved_documents = self.vector_search.hybrid_search(
-        #         query, top_k=top_k
-        #     )
-        # except Exception:
         self.retrieved_documents = self.vector_search.search(
             query, top_k=top_k
         )
