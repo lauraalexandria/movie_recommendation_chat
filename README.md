@@ -150,7 +150,7 @@ docker-compose up --build -d
 #### Create Qdrant Collection
 
 ```
-make create-qdrant-collection
+make create-qdrant-collections
 ```
 
 #### Access Points
@@ -255,7 +255,7 @@ make extract-data
 ### Create Qdrant Collection
 
 ```
-make create-qdrant-collection
+make create-qdrant-collections
 ```
 
 ### Run evaluations
@@ -278,7 +278,7 @@ First, we can evaluate the retrieval
 make generate-evaluation-data
 ```
 
-After selected the retrieval, we can also run the evaluation for the the rag system
+After selected the retrieval, we can also run the evaluation for the the rag system. Detail for make sure the chat will correct even the answers about movies it does not know, for example, recent movies.
 
 ```
 make rag-eval-simulation

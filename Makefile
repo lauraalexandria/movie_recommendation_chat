@@ -6,8 +6,8 @@ RAW_DATA = $(DATA_DIR)/raw
 EVAL_DATA = $(DATA_DIR)/processed/ground-truth-retrieval.csv
 
 COLLECTION_NAME = movies
-EMBEDDING_DIMENSIONALITY = 384
-EMB_MODEL_NAME = BAAI/bge-small-en
+EMBEDDING_DIMENSIONALITY = 512
+EMB_MODEL_NAME = jinaai/jina-embeddings-v2-small-en
 TOP_K = 10
 QUERY = "why is submarine a good movie?" # "tell me a non-american comedy movie" # "i want to watch a movie similar to submarine"
 N_TESTS = 3
@@ -29,16 +29,8 @@ extract-data:
 	$(PYTHON) src/data_extractor.py
 
 ## Create Qdrant Collection
-create-qdrant-collection:
-	$(PYTHON) src/create_qdrant_collection.py --collection-name $(COLLECTION_NAME) --embedding-dimensionality $(EMBEDDING_DIMENSIONALITY) --model-name $(EMB_MODEL_NAME) --path-source $(RAW_DATA)
-
-## Create Qdrant Collection
-create-sparse-collection:
-	$(PYTHON) src/create_sparse_collection.py --collection-name $(COLLECTION_NAME) --embedding-dimensionality $(EMBEDDING_DIMENSIONALITY) --model-name $(EMB_MODEL_NAME) --path-source $(RAW_DATA)
-
-## Create Qdrant Collection
-create-hybrid-collection:
-	$(PYTHON) src/create_hybrid_collection.py --collection-name $(COLLECTION_NAME) --embedding-dimensionality $(EMBEDDING_DIMENSIONALITY) --model-name $(EMB_MODEL_NAME) --path-source $(RAW_DATA)
+create-qdrant-collections:
+	$(PYTHON) src/create_qdrant_collections.py --collection-name $(COLLECTION_NAME) --embedding-dimensionality $(EMBEDDING_DIMENSIONALITY) --model-name $(EMB_MODEL_NAME) --path-source $(RAW_DATA)
 
 ## Data Preparation
 generate-evaluation-data-simulation:
@@ -73,4 +65,4 @@ monitor:
 	streamlit run monitoring/dashboard.py
 
 ## Complete Chat Flow
-complete-chat-flow: extract-data create-qdrant-collection chatbot monitor
+complete-chat-flow: extract-data create-qdrant-collections chatbot monitor

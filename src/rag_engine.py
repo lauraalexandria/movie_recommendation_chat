@@ -39,7 +39,7 @@ class RAGEngine:
     def create_context(self, query: str, top_k: int = 10) -> str:
         """Create context from vector search"""
 
-        self.retrieved_documents = self.vector_search.search(
+        self.retrieved_documents = self.vector_search.sparse_search(
             query, top_k=top_k
         )
 

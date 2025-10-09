@@ -69,52 +69,63 @@ def evaluate(ground_truth_path, collection_name, emb_model_name, top_k):
         collection_name=collection_name,
         emb_model_name=emb_model_name,
     )
-    search_relevance = []
+    semantic_relevance = []
+    sparse_relevance = []
     hybrid_relevance = []
 
     logging.info("Evaluating questions")
     for q in tqdm(ground_truth_data):
         doc_id = q["movie"]
 
-        search_recommendations = vector_search.search(
+        semantic_recommendations = vector_search.semantic_search(
             q["solicitations"], top_k=top_k
         )
 
-        search_answer = []
-        for movie in search_recommendations:
-            search_answer = search_answer + [
+        semantic_answer = []
+        for movie in semantic_recommendations:
+            semantic_answer = semantic_answer + [
                 f"{movie["title"]} - {movie["year"]}"
             ]
 
-        relevance_aux = [m == doc_id for m in search_answer]
-        search_relevance.append(relevance_aux)
+        relevance_aux = [m == doc_id for m in semantic_answer]
+        semantic_relevance.append(relevance_aux)
 
-        hybrid_search_fail = 0
-        try:
-            hybrid_recommendations = vector_search.hybrid_search(
-                q["solicitations"], top_k=top_k
-            )
+        sparse_recommendations = vector_search.sparse_search(
+            q["solicitations"], top_k=top_k
+        )
 
-            hybrid_answer = []
-            for movie in hybrid_recommendations:
-                hybrid_answer = hybrid_answer + [
-                    f"{movie["title"]} - {movie["year"]}"
-                ]
+        sparse_answer = []
+        for movie in sparse_recommendations:
+            sparse_answer = sparse_answer + [
+                f"{movie["title"]} - {movie["year"]}"
+            ]
 
-            relevance_aux = [m == doc_id for m in hybrid_answer]
-            hybrid_relevance.append(relevance_aux)
-        except Exception:
-            hybrid_search_fail += 1
+        relevance_aux = [m == doc_id for m in sparse_answer]
+        sparse_relevance.append(relevance_aux)
+
+        hybrid_recommendations = vector_search.hybrid_search(
+            q["solicitations"], top_k=top_k
+        )
+
+        hybrid_answer = []
+        for movie in hybrid_recommendations:
+            hybrid_answer = hybrid_answer + [
+                f"{movie["title"]} - {movie["year"]}"
+            ]
+
+        relevance_aux = [m == doc_id for m in hybrid_answer]
+        hybrid_relevance.append(relevance_aux)
 
     log_entry = {
         "Type": "Retrieval Evaluation",
         "Embedding Model": emb_model_name,
         "K": top_k,
-        "Vector Search HitRate": hit_rate(search_relevance),
-        "Vector Search MRR": mrr(search_relevance),
+        "Semantic Search HitRate": hit_rate(semantic_relevance),
+        "Semantic Search MRR": mrr(semantic_relevance),
+        "Sparse Search HitRate": hit_rate(sparse_relevance),
+        "Sparse Search MRR": mrr(sparse_relevance),
         "Hybrid Search HitRate": hit_rate(hybrid_relevance),
         "Hybrid Search MRR": mrr(hybrid_relevance),
-        "Hybrid Search Fails": hybrid_search_fail,
     }
 
     print(log_entry)

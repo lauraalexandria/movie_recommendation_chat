@@ -25,20 +25,23 @@ client_qdrant = QdrantClient(f"http://{QDRANT_HOST}:6333")
 EVALUATE_TEMPLATE = """
 You are an expert evaluator for a RAG system.
 Analyze the relevance of the generated answer to the given solicitation.
-Based on the relevance of the generated answer, you will classify it
-as "NON_RELEVANT", "PARTLY_RELEVANT", or "RELEVANT".
+
+**CRITICAL CONTEXT:**
+- You have LIMITED KNOWLEDGE about recent movies and non-american movies
+- First, compare if the expected answer appears in the generated answer
+- If so, the answer is necessarily RELEVANT, regardless of your base knowledge
 
 Here is the data for evaluation:
 
-solicitation: {solicitation}
+Solicitation: {solicitation}
 Generated Answer: {answer}
+Expected Answer - Released Date: {movie}
 
-Analyze content and context of the answer in relation to the solicitation
-and provide your evaluation in parsable JSON without using code blocks:
-
+Provide your evaluation in parsable JSON without using code blocks
+and avoid to use double quotes within the explanation:
 {{
 "Relevance": "NON_RELEVANT" | "PARTLY_RELEVANT" | "RELEVANT",
-"Explanation": "[Provide a brief explanation for your evaluation]"
+"Explanation": "[Brief explanation considering knowledge limitations]"
 }}
 """.strip()
 
@@ -47,11 +50,12 @@ def evaluation_category(
     evaluate_template: str,
     solicitation: str,
     answer: str,
+    movie: str,
     gpt_model_name: str,
 ):
 
     prompt = evaluate_template.format(
-        solicitation=solicitation, answer=answer
+        solicitation=solicitation, answer=answer, movie=movie
     )
 
     answer_message = [
@@ -165,8 +169,10 @@ def evaluate_rag(
                 evaluate_template=EVALUATE_TEMPLATE,
                 solicitation=solicitation,
                 answer=rag_response,
+                movie=q["movie"],
                 gpt_model_name=gpt_model_name,
             )
+            print(rag_evaluation)
             evaluation = json.loads(rag_evaluation)
             evaluations.append((q, rag_response, evaluation, "rag"))
 
@@ -174,6 +180,7 @@ def evaluate_rag(
                 evaluate_template=EVALUATE_TEMPLATE,
                 solicitation=solicitation,
                 answer=chat_response,
+                movie=q["movie"],
                 gpt_model_name=gpt_model_name,
             )
             evaluation = json.loads(chat_evaluation)
