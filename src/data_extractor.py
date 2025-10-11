@@ -27,14 +27,19 @@ boxd = boxd[
 boxd["Name"] = (
     boxd["Name"]
     .str.lower()
+    .str.replace("bram stoker's ", "")
     .str.replace(" ", "+")
     .str.replace("’", "%E2%80%99")
     .str.replace(".", "")
     .str.replace("?", "%3F")
+    .str.replace("&", "%26")
     # Translate some brazilian names
     .str.replace("brainstorm", "bicho+de+sete+cabe%C3%A7as")
+    .str.replace("bingo", "bingo%3A+the+king+of+the+mornings")
     .str.replace("letter+beyond+the+walls", "carta+para+al%C3%A9m+dos+muros")
+    .str.replace("boy+%26+the+world", "boy+and+the+world")
     .str.replace("the+wrung-out+man", "o+homem+que+virou+suco")
+    .str.replace("our+dream", "nosso+sonho")
     .str.replace("the+quartet", "o+quatrilho")
     .str.replace("redeemer", "redentor")
     .str.replace("the+nutty+boy", "menino+maluquinho")
@@ -89,6 +94,9 @@ movies_data[movies_data.select_dtypes(include=["object"]).columns] = (
         lambda x: x.str.lower()
     )
 )
+movies_data["Country"] = movies_data["Country"].str.split(", ", expand=True)[
+    0
+]
 movies_data = pd.concat(
     [
         movies_data,

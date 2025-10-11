@@ -85,7 +85,9 @@ def create_collection(
 
         text = f"""
         {row['Title']} {row['Genre_0']} {row['Genre_1']} {row['Genre_2']}
+        {row["Year"]}
         {row['Director']} {row['Plot']}
+        {row["Country"]}
         """
         payload = {
             "content": text,

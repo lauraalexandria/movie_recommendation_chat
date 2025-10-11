@@ -33,7 +33,10 @@ class VectorSearch:
         logging.info("Searching for answers")
         search_results = self.client.query_points(
             collection_name=f"{self.collection_name}_semantic",
-            query=query,
+            query=models.Document(
+                text=query,
+                model=self.emb_model_name,
+            ),
             using=self.emb_model_name,
             with_payload=True,
             limit=top_k,
@@ -75,7 +78,10 @@ class VectorSearch:
 
         search_results = self.client.query_points(
             collection_name=f"{self.collection_name}_hybrid",
-            query=query,
+            query=models.Document(
+                text=query,
+                model=self.emb_model_name,
+            ),
             using=self.emb_model_name,
             limit=top_k,
             with_payload=True,

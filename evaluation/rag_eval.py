@@ -30,6 +30,7 @@ Analyze the relevance of the generated answer to the given solicitation.
 - You have LIMITED KNOWLEDGE about recent movies and non-american movies
 - First, compare if the expected answer appears in the generated answer
 - If so, the answer is necessarily RELEVANT, regardless of your base knowledge
+- If the answer says it doesn't have the necessary context, it is NON_RELEVANT
 
 Here is the data for evaluation:
 

@@ -101,6 +101,8 @@ In order to test the results i created a ground truth data
 | Few-shot              | 0.80       | 0.78      | 0.87    | ✅ |
 | Chain-of-thought      | **0.84**   | **0.82**  | 0.85    | ✅ |
 
+the bare chat can make recommendations based on directors history, but my rag can make recommendations of new movies and non-american movies
+
 ## How to execute locally
 
 ### Requirements
