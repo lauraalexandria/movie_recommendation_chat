@@ -25,24 +25,20 @@ client_qdrant = QdrantClient(f"http://{QDRANT_HOST}:6333")
 EVALUATE_TEMPLATE = """
 You are an expert evaluator for a RAG system.
 Analyze the relevance of the generated answer to the given solicitation.
-
-**CRITICAL CONTEXT:**
-- You have LIMITED KNOWLEDGE about recent movies and non-american movies
-- First, compare if the expected answer appears in the generated answer
-- If so, the answer is necessarily RELEVANT, regardless of your base knowledge
-- If the answer says it doesn't have the necessary context, it is NON_RELEVANT
+Based on the relevance of the generated answer, you will classify it
+as "NON_RELEVANT", "PARTLY_RELEVANT", or "RELEVANT".
 
 Here is the data for evaluation:
 
-Solicitation: {solicitation}
+solicitation: {solicitation}
 Generated Answer: {answer}
-Expected Answer - Released Date: {movie}
 
-Provide your evaluation in parsable JSON without using code blocks
-and avoid to use double quotes within the explanation:
+Analyze content and context of the answer in relation to the solicitation
+and provide your evaluation in parsable JSON without using code blocks:
+
 {{
 "Relevance": "NON_RELEVANT" | "PARTLY_RELEVANT" | "RELEVANT",
-"Explanation": "[Brief explanation considering knowledge limitations]"
+"Explanation": "[Provide a brief explanation for your evaluation]"
 }}
 """.strip()
 
@@ -55,19 +51,37 @@ def evaluation_category(
     gpt_model_name: str,
 ):
 
-    prompt = evaluate_template.format(
-        solicitation=solicitation, answer=answer, movie=movie
-    )
+    movie = movie[:-7]
 
-    answer_message = [
-        {"role": "user", "content": prompt},
-    ]
+    if movie in answer.lower():
 
-    answer = client_openai.chat.completions.create(
-        model=gpt_model_name, messages=answer_message
-    )
+        answer = """{
+            "Relevance": "RELEVANT",
+            "Explanation": "The generated answer identifies the movie"
+        }"""
 
-    answer = answer.choices[0].message.content.strip()
+    elif "context provided does not" in answer.lower():
+
+        answer = """{
+            "Relevance": "NON_RELEVANT",
+            "Explanation": "The generated answer doesn't identify any movie"
+        }"""
+
+    else:
+
+        prompt = evaluate_template.format(
+            solicitation=solicitation, answer=answer
+        )
+
+        answer_message = [
+            {"role": "user", "content": prompt},
+        ]
+
+        answer = client_openai.chat.completions.create(
+            model=gpt_model_name, messages=answer_message
+        )
+
+        answer = answer.choices[0].message.content.strip()
 
     return answer
 
@@ -142,6 +156,7 @@ def evaluate_rag(
         evaluations = []
         for q in tqdm(ground_truth):
             solicitation = q["solicitations"]
+            print(solicitation)
             context = engine.create_context(solicitation, top_k)
             rag_response = engine.generate_response(
                 solicitation, context, gpt_model_name=gpt_model_name
@@ -173,6 +188,8 @@ def evaluate_rag(
                 movie=q["movie"],
                 gpt_model_name=gpt_model_name,
             )
+            print("RAG")
+            print(rag_response)
             print(rag_evaluation)
             evaluation = json.loads(rag_evaluation)
             evaluations.append((q, rag_response, evaluation, "rag"))
@@ -184,6 +201,9 @@ def evaluate_rag(
                 movie=q["movie"],
                 gpt_model_name=gpt_model_name,
             )
+            print("CHAT")
+            print(chat_response)
+            print(chat_evaluation)
             evaluation = json.loads(chat_evaluation)
             evaluations.append((q, chat_response, evaluation, "chat"))
 
