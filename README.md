@@ -1,17 +1,16 @@
 # Movie Recommendation Chat
 
-A Retrieval-Augmented Generation (RAG) project that creates a chat movie recommendation expert, using a API of movies for context, delivering a friendly chat interface and a monitoring model.
+The goal of this project is to develop and build an end-to-end Retrieval-Augmented Generation (RAG) chat movie recommendation expert, delivering a friendly chat interface and a monitoring dashboard with performance and feedback.
 
 [photos from the chat and de monitoting dash?]
 
 The project includes:
-* Extracts selected movie plots and data from OMDb API;
-* Uses these movie selection as a knowledge base for the problem;
-* Create embedding vectors using Qdrant;
-* Brings context to ChatGPT API;
-* Deploys the chat in a friendly interface;
-* Allows chat monitoring with a dashboard
-* Application fully containerized:
+* **Data Extraction:** Downloding selected movie plots and data from OMDb API
+* **Data preparation/Embedding:** Data transformation to unstructured data
+* **Modeling/RAG:** Brings base knowledge to ChatGPT API
+* **User Interface:** Deploys the chat in a friendly interface
+* **Monitoring:** Dashboard about performance and feedback
+* **Deployment:** Model and applications deployment using Docker
 
 ## Tools used
 
@@ -67,12 +66,14 @@ The project includes:
 
 ## Model
 
-This single make command includes:
+This single make command includes: (teria como o docker-compose já criar a coleção?)
 
-1. Creates the Qdrant collection (teria como o docker-compose já criar a coleção?)
-* Consequently, the api that is used by the chat uses the rag_engine/vector_search, in a way that the user enter a query, this query is embbended using the same model as the collection this query is compared to the movies plots the K biggest similarity are selected, and then used as the context in the ChatGPT API and then the answer is generated and appears in the chat!
-2. The chatbot is created and hosted
-3. After a user interacts with the chatbot,the person can evaluate each of the answers of a positive or negative vote and also add a comment;
+1. (Optional) Generate the database that will be used with the knowledge base on which the chat should be based;
+1. Creates the Qdrant collection, in this case, it will be generated for both semantic, vector, and hybrid search. This means that all films present in the knowledge base will be projected into the three types of defined vector spaces, a process known as embedding.
+    * Consequently, the api that is used by the chat uses the rag_engine/vector_search, in a way that the user enter a query, this query is embbended using the same model as the collection this query is compared to the movies plots the K biggest similarity are selected, and then used as the context in the ChatGPT API and then the answer is generated and appears in the chat!
+1. The API with the select RAG is hosted
+1. The chatbot is created and hosted
+1. After a user interacts with the chatbot,the person can evaluate each of the answers of a positive or negative vote and also add a comment;
 
 
 ```
@@ -87,19 +88,18 @@ In order to test the results i created a ground truth data
 
 #### Retrieval Evaluation
 
-| Method  | Precision@5 | Recall@5 | MRR  | Selected |
-|---------|-------------|----------|------|----------|
-| BM25    | 0.68        | 0.70     | 0.65 |          |
-| Dense   | 0.74        | 0.78     | 0.72 |          |
-| Hybrid  | **0.82**    | **0.85** | **0.80** | ✅ |
+| Method  | HitRate@5 | MRR@5 | HitRate@10 | MRR@10 | HitRate@15 | MRR@15 | Selected |  
+|-|-|-|-|-|-|-|-|
+| Semantic | 0.7143 | 0.5889 |  0.7862 | 0.5985 | 0.8198 | 0.6011| |
+| **BM25** | **0.8469** | **0.7808** | **0.8833** | **0.7857** |  **0.8973** | **0.7868** |✅ |
+| Hybrid  | 0.7143 | 0.5889 | 0.7862 | 0.5985 | 0.8198 | 0.6011 | |
 
 #### LLM Evaluation
 
 | Prompt Strategy       | Factuality | Relevance | Fluency | Selected |
 |-----------------------|------------|-----------|---------|----------|
-| Zero-shot             | 0.72       | 0.70      | 0.85    |          |
-| Few-shot              | 0.80       | 0.78      | 0.87    | ✅ |
-| Chain-of-thought      | **0.84**   | **0.82**  | 0.85    | ✅ |
+| Raw chat | 0.80       | 0.78      | 0.87    | ✅ |
+| RAG      | **0.84**   | **0.82**  | 0.85    | ✅ |
 
 the bare chat can make recommendations based on directors history, but my rag can make recommendations of new movies and non-american movies
 
@@ -373,3 +373,4 @@ conda deactivate
 ## Acknowledgments
 
 ## Author
+
