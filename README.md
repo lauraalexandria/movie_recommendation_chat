@@ -1,15 +1,12 @@
 # 🎬 Movie Recommendation Chat - RAG System
 
-## 🎯 Project Overview
-
 This project develops a complete **Retrieval-Augmented Generation (RAG)** system for movie recommendations, featuring an interactive chat interface and comprehensive monitoring dashboard. 
-
-
 [photos from the chat and de monitoting dash?]
 
 > **🤔 What is RAG?** RAG combines information retrieval with AI generation - it first searches a knowledge base for relevant information, then uses that context to generate intelligent responses!
 
-The project includes:
+## 🎯 Project Overview
+
 * **📥 Data Extraction**: Download movie metadata and plots from OMDb API
 * **🔄 Data Preparation & Embedding**: Transform structured data into vector representations
 * **🧠 RAG Modeling**: Enhance ChatGPT with movie knowledge base
@@ -17,6 +14,7 @@ The project includes:
 * **💬 User Interface**: Friendly chat interface for movie recommendations
 * **📊 Monitoring**: Real-time performance analytics and user feedback
 * **🐳 Deployment**: Containerized deployment using Docker
+* Metrics?
 
 ## 🛠️ Tools used
 
@@ -389,5 +387,6 @@ conda deactivate
 ## Acknowledgments
 
 ## Author
+
 
 
