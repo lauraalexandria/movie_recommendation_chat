@@ -60,10 +60,10 @@ else:
     col1, col2 = st.columns(2)
 
     with col1:
-        chat_df["timestamp"] = pd.to_datetime(chat_df["timestamp"])
+        chat_df["solicitation"] = chat_df.index
         fig_sim = px.line(
             chat_df,
-            x="timestamp",
+            x="solicitation",
             y="average_similarity",
             title="Avarage similarity over time/requests",
         )

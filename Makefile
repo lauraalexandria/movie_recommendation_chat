@@ -24,6 +24,11 @@ install:
 	pip install -r requirements.txt
 	pre-commit install
 
+## Iniciate docker
+build-docker:
+	docker-compose up --build -d
+	sleep 15
+
 ## Extract Data
 extract-data:
 	$(PYTHON) src/data_extractor.py
@@ -65,4 +70,4 @@ monitor:
 	streamlit run monitoring/dashboard.py
 
 ## Complete Chat Flow
-complete-chat-flow: extract-data create-qdrant-collections chatbot monitor
+complete-chat-flow: extract-data build-docker create-qdrant-collections # chatbot monitor

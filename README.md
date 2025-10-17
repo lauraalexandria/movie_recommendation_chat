@@ -1,7 +1,8 @@
 # 🎬 Movie Recommendation Chat - RAG System
 
-This project develops a complete **Retrieval-Augmented Generation (RAG)** system for movie recommendations, featuring an interactive chat interface and comprehensive monitoring dashboard. 
-[photos from the chat and de monitoting dash?]
+This project develops a complete **Retrieval-Augmented Generation (RAG)** system for movie recommendations, featuring an interactive chat interface and comprehensive monitoring dashboard.
+
+![Movie Recommendation Chat Interface](./images/chat-interface.png)
 
 > **🤔 What is RAG?** RAG combines information retrieval with AI generation - it first searches a knowledge base for relevant information, then uses that context to generate intelligent responses!
 
@@ -14,7 +15,6 @@ This project develops a complete **Retrieval-Augmented Generation (RAG)** system
 * **💬 User Interface**: Friendly chat interface for movie recommendations
 * **📊 Monitoring**: Real-time performance analytics and user feedback
 * **🐳 Deployment**: Containerized deployment using Docker
-* Metrics?
 
 ## 🛠️ Tools used
 
@@ -72,27 +72,21 @@ This project develops a complete **Retrieval-Augmented Generation (RAG)** system
 
 ### 🎯 Step-by-Step Process
 
-1. **📊 Knowledge Base Setup** (Optional)
-   - Generate movie database that serves as the AI's knowledge base
-
-2. **🔮 Vector Database Creation**
+1. **🔮 Vector Database Creation**
    - Create Qdrant collection with multiple search capabilities:
    - **🔍 Semantic Search**: Understands meaning and context
    - **📐 Vector Search**: Mathematical similarity matching
    - **🤝 Hybrid Search**: Combines both approaches
    - *All movie plots are converted into numerical vectors (embeddings)*
 
-3. **🎯 Query Processing**
+2. **🎯 Query Processing**
    - User request is transformed into the same vector space
    - TOP_K most similar movies are retrieved using similarity metrics
 
-4. **🧠 Contextual Response Generation**
+3. **🧠 Contextual Response Generation**
    - Selected movie information is formatted into a prompt template
    - ChatGPT generates responses using ONLY the provided context
    - Prevents hallucination and ensures accuracy
-
-5. **🚀 Response Delivery**
-   - Final answer is presented to the user
 
 ### 🌐 Deployment Pipeline
 
@@ -122,16 +116,14 @@ To select the optimal retrieval method, I conducted comprehensive evaluations co
 
 ### 🏆 Performance Metrics
 
-**HitRate**: Percentage of queries where correct answer is in top results  
+**HitRate**: Percentage of queries where correct answer is in top results
 **MRR (Mean Reciprocal Rank)**: Measures how high correct answers rank in results
 
 **📊 Results Summary**:
-- **BM25 performed best** with larger K values
+- **BM25 performed best** within all K values
 - **K=10 selected** as optimal (minimal improvement with K=15)
-- Detailed metrics available in evaluation reports
 
-
-| Method  | HitRate@5 | MRR@5 | HitRate@10 | MRR@10 | HitRate@15 | MRR@15 | Selected |  
+| Method  | HitRate@5 | MRR@5 | HitRate@10 | MRR@10 | HitRate@15 | MRR@15 | Selected |
 |-|-|-|-|-|-|-|-|
 | Semantic | 0.7143 | 0.5889 |  0.7862 | 0.5985 | 0.8198 | 0.6011| |
 | **BM25** | **0.8469** | **0.7808** | **0.8833** | **0.7857** |  **0.8973** | **0.7868** |✅ |
@@ -140,24 +132,22 @@ To select the optimal retrieval method, I conducted comprehensive evaluations co
 #### 🧠 LLM Evaluation & RAG Impact Analysis
 
 **Evaluation Methodology:**
-Prior to selecting the retrieval method, I conducted a comprehensive comparison between the RAG-enhanced chat and the baseline chat (without RAG capabilities) using the same evaluation dataset.
+After selecting the retrieval method, I conducted a comprehensive comparison between the RAG-enhanced chat and the baseline chat (without RAG capabilities) using the same evaluation dataset.
 
 **Evaluation Process:**
 - Used the LLM itself to classify each response into three categories:
   - **"NON_RELEVANT"** - Incorrect or irrelevant recommendations
-  - **"PARTLY_RELEVANT"** - Partially correct but incomplete answers  
+  - **"PARTLY_RELEVANT"** - Partially correct but incomplete answers
   - **"RELEVANT"** - Accurate and appropriate recommendations
 - Implemented additional validation steps to verify movie name accuracy, particularly important for recent films where the base model's knowledge is limited
-- Primary metric: **Relevance Proportion** - percentage of "RELEVANT" classifications
+- **Primary metric:** Percentage of "RELEVANT" classifications
 
 **Key Findings:**
-- **📈 20% Improvement**: RAG system increased relevant responses by 20 percentage points
+- **📈 Improvement**: RAG system increased relevant responses by 20 percentage points
 - **🎯 Enhanced Capabilities**:
-  - **Base Chat**: Limited to recommending films based on director history and well-known titles
   - **RAG System**: Successfully recommends recent releases and non-American cinema beyond the model's original training data
+  - **Base Chat**: It still performed better than RAG in recommending films by a specific director
 - **🌍 Expanded Coverage**: RAG effectively bridges the knowledge gap for content outside the model's cutoff date and regional focus
-
-**Conclusion**: The RAG implementation significantly outperforms the baseline by leveraging the custom movie database, demonstrating particular strength in handling contemporary and international film recommendations.
 
 | Prompt Strategy       | Factuality | Relevance | Fluency | Selected |
 |-----------------------|------------|-----------|---------|----------|
@@ -205,7 +195,7 @@ cp .env.example .env
 ### **RUN**
 
 ``` bash
-make complete-chat-flow (uai preciso?)
+make complete-chat-flow
 ```
 
 #### 🌐 Service Access Points
@@ -229,8 +219,7 @@ curl -X POST "http://localhost:8000/rag/query" \
   -d '{"query": "I want comedy movies for quiet people", "top_k": 10}'
 ```
 
-
-### 💬 Chat Interface Features (confere no vscode)
+### 💬 Chat Interface Features
 
 The Streamlit chatbot includes:
 - **Feedback system** with thumbs up/down ratings
@@ -240,7 +229,7 @@ The Streamlit chatbot includes:
 
 #### 📝 Logging Formats
 
-**Chat Logs** (`chat_logs.jsonl`):
+**Chat Logs** (`logs/chat/chat_logs.jsonl`):
 ```json
 {
   "timestamp": "2024-01-01T12:00:00",
@@ -250,12 +239,12 @@ The Streamlit chatbot includes:
   "retrieved_count": 10,
   "llm_response": "Based on your query, I recommend...",
   "response_time_seconds": 2.34,
-  "context_used": ["Ex Machina", "Her", "Blade Runner"],
+  "context_used": ["Ex Machina", "Her", "Blade Runner", ...],
   "average_similarity": 0.85
 }
 ```
 
-**Document Metadata**:
+**Document Metadata** (shown in retrieved_documents key):
 ```json
 {
   "title": "Inception",
@@ -269,7 +258,7 @@ The Streamlit chatbot includes:
 }
 ```
 
-**User Feedback**:
+**User Feedback**  (`logs/chat/feedback_logs.jsonl`):
 ```json
 {
   "timestamp": "2024-01-01T12:05:00",
@@ -280,6 +269,8 @@ The Streamlit chatbot includes:
 }
 ```
 
+By the way, I kept the feedback data I generated during my testing.
+
 ### 📊 Monitoring Dashboard
 
 The monitoring system provides real-time insights:
@@ -289,7 +280,9 @@ The monitoring system provides real-time insights:
 - **User feedback** trends and satisfaction rates
 - **Performance metrics** over time
 
-PUT THE IMAGE!
+![Monitoring Dashboard](./images/monitoring-interface-1.png)
+![Monitoring Dashboard](./images/monitoring-interface-2.png)
+![Monitoring Dashboard](./images/monitoring-interface-3.png)
 
 ### 🔚 Shutdown Procedures
 
@@ -308,7 +301,7 @@ conda deactivate
 
 To adapt the project with your own data or models:
 
-### 🗃️ Data Extraction
+### 🗃️ Data Extraction (Optional)
 
 Replace the default dataset with your Letterboxd ratings:
 1. Export your ratings from Letterboxd (`ratings.csv`)
@@ -387,6 +380,3 @@ conda deactivate
 ## Acknowledgments
 
 ## Author
-
-
-
