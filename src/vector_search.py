@@ -78,13 +78,29 @@ class VectorSearch:
 
         search_results = self.client.query_points(
             collection_name=f"{self.collection_name}_hybrid",
+            prefetch=[
+                models.Prefetch(
+                    query=models.Document(
+                        text=query,
+                        model=self.emb_model_name,
+                    ),
+                    using=self.emb_model_name,
+                    limit=(10 * top_k),
+                ),
+            ],
             query=models.Document(
                 text=query,
-                model=self.emb_model_name,
+                model="Qdrant/bm25",
             ),
-            using=self.emb_model_name,
+            using="bm25",
             limit=top_k,
             with_payload=True,
         )
 
-        return [hit.payload for hit in search_results.points]
+        final_dicts = []
+        for hit in search_results.points:
+            aux_dict = hit.payload
+            aux_dict["score"] = hit.score
+            final_dicts.append(aux_dict)
+
+        return final_dicts
