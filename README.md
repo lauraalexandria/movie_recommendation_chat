@@ -1,5 +1,13 @@
 # 🎬 Movie Recommendation Chat - RAG System
 
+![Python](https://img.shields.io/badge/Python-3776AB?style=plastic&logo=python&logoColor=white)
+![Pandas](https://img.shields.io/badge/Pandas-150458?style=plastic&logo=pandas&logoColor=white)
+![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=plastic&logo=openai&logoColor=white)
+![Qdrant](https://img.shields.io/badge/Qdrant-5E3EFB?style=plastic&logo=qdrant&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=plastic&logo=docker&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=plastic&logo=fastapi&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=plastic&logo=streamlit&logoColor=white)
+
 This project develops a complete **Retrieval-Augmented Generation (RAG)** system for movie recommendations, featuring an interactive chat interface and comprehensive monitoring dashboard.
 
 ![Movie Recommendation Chat Interface](./images/chat-interface.png)
@@ -26,8 +34,6 @@ This project develops a complete **Retrieval-Augmented Generation (RAG)** system
 * **🤖 OpenAI API** - GPT models for conversational AI
 * **⚡ FastAPI** - High-performance API framework
 * **📈 Streamlit** - Chat UI and monitoring dashboard
-
-> **🔍 What are embeddings?** They're numerical representations of text that capture semantic meaning, allowing computers to understand relationships between words and concepts!
 
 ## 📁 Projet Struture
 
@@ -79,6 +85,8 @@ This project develops a complete **Retrieval-Augmented Generation (RAG)** system
    - **🤝 Hybrid Search**: Combines both approaches
    - *All movie plots are converted into numerical vectors (embeddings)*
 
+> **🔍 What are embeddings?** They're numerical representations of text that capture semantic meaning, allowing computers to understand relationships between words and concepts!
+
 2. **🎯 Query Processing**
    - User request is transformed into the same vector space
    - TOP_K most similar movies are retrieved using similarity metrics
@@ -120,14 +128,14 @@ To select the optimal retrieval method, I conducted comprehensive evaluations co
 **MRR (Mean Reciprocal Rank)**: Measures how high correct answers rank in results
 
 **📊 Results Summary**:
-- **BM25 performed best** within all K values
+- **Hybrid performed best** within the bigger K values
 - **K=10 selected** as optimal (minimal improvement with K=15)
 
 | Method  | HitRate@5 | MRR@5 | HitRate@10 | MRR@10 | HitRate@15 | MRR@15 | Selected |
 |-|-|-|-|-|-|-|-|
-| Semantic | 0.7143 | 0.5889 |  0.7862 | 0.5985 | 0.8198 | 0.6011| |
-| **BM25** | **0.8469** | **0.7808** | **0.8833** | **0.7857** |  **0.8973** | **0.7868** |✅ |
-| Hybrid  | 0.7143 | 0.5889 | 0.7862 | 0.5985 | 0.8198 | 0.6011 | |
+| Semantic | 0.7199 | 0.5940 |  0.7918 | 0.6036 | 0.8254 | 0.6062| |
+| BM25 | **0.8543** | **0.7872** | 0.8908 | 0.7921 |  0.9048 | 0.7932 | |
+| **Hybrid**  | 0.8506 | 0.7844 | **0.8945** | **0.8040** | **0.9104** | **0.7986** |✅ |
 
 #### 🧠 LLM Evaluation & RAG Impact Analysis
 
@@ -149,10 +157,10 @@ After selecting the retrieval method, I conducted a comprehensive comparison bet
   - **Base Chat**: It still performed better than RAG in recommending films by a specific director
 - **🌍 Expanded Coverage**: RAG effectively bridges the knowledge gap for content outside the model's cutoff date and regional focus
 
-| Prompt Strategy       | Factuality | Relevance | Fluency | Selected |
+| Prompt Strategy       | NON_RELEVANT | PARTLY_RELEVANT | RELEVANT | Selected |
 |-----------------------|------------|-----------|---------|----------|
-| Raw chat | 0.80       | 0.78      | 0.87    | ✅ |
-| RAG      | **0.84**   | **0.82**  | 0.85    | ✅ |
+| Raw chat | 0.0373    | 0.2577   | 0.7050  | |
+| RAG      | **0.0513**   | **0.0401**  | **0.9085**    | ✅ |
 
 ## 🚀 How to Execute Locally
 
@@ -280,9 +288,9 @@ The monitoring system provides real-time insights:
 - **User feedback** trends and satisfaction rates
 - **Performance metrics** over time
 
-![Monitoring Dashboard](./images/monitoring-interface-1.png)
-![Monitoring Dashboard](./images/monitoring-interface-2.png)
-![Monitoring Dashboard](./images/monitoring-interface-3.png)
+![Monitoring Dashboard 1](./images/monitoring-interface-1.png)
+![Monitoring Dashboard 2](./images/monitoring-interface-2.png)
+![Monitoring Dashboard 3](./images/monitoring-interface-3.png)
 
 ### 🔚 Shutdown Procedures
 
@@ -330,14 +338,14 @@ make create-qdrant-collections
 
 ### 🧪 Evaluation Pipeline
 
-1. **Generate evaluation data** (regenerate for custom datasets):
-```bash
-make generate-evaluation-data
-```
-
-2. **Cost simulation** (estimate API expenses):
+1. **Cost simulation** (estimate API expenses):
 ```bash
 make generate-evaluation-data-simulation
+```
+
+3. **Generate evaluation data** (regenerate for custom datasets):
+```bash
+make generate-evaluation-data
 ```
 
 3. **Retrieval evaluation**:
@@ -375,8 +383,11 @@ docker-compose down -v
 conda deactivate
 ```
 
-## To-do list (next improvements)
-
 ## Acknowledgments
 
+Thank you to [DataTalks.club](https://datatalks.club/) for the excellent LLM Zoomcamp and for proposing this project. The hands-on approach provided invaluable experience in building a complete RAG system from scratch.
+
 ## Author
+
+Built with ❤️ by **Laura Alexandria de Oliveira**
+
